@@ -8,4 +8,7 @@ Implementación de redes de área amplia y servicios distribuidos
 
 ## Archivos a revisar
 
-- El archivo principal puede encontrarse en image_processing.c
+El archivo principal puede encontrarse en image_processing.c. Para ejecutarlo:
+
+    gcc -fopenmp image_processing.c
+    ./a.out

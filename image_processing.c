@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "process_functions.h"
 
 //gcc -fopenmp image_processing.c
@@ -17,49 +18,51 @@ int main() {
         exit(1);
     }
 
-    //TODO abrir 100 imágenes
+    //TODO open 100 pictures
 
-    //Paralelización
+    //Paralelization
     #pragma omp parallel
     {
         #pragma omp sections
         {
-            //En escala de grises
+            //Grayscale
             #pragma omp section
             {
-                (void)gray_scale("filepath");
+                (void)gray_scale("Images/Original/espacio.bmp", "Images/Result/Gray/espacio_gray");
             }
 
-            //En espejo respecto de la horizontal a color
+            //Mirror horizontal gray
             #pragma omp section
             {
-                (void)mirror_horizontal_color("filepath");
+                (void)mirror_horizontal_gray("Images/Original/espacio.bmp", "Images/Result/HorizontalGray/espacio_horizontal_gray");
             }
 
-            //En espejo respecto a la vertical a color
+            //Mirror horizontal color
             #pragma omp section
             {
-                (void)mirror_vertical_color("filepath");
+                (void)mirror_horizontal_color("Images/Original/espacio.bmp", "Images/Result/HorizontalColor/espacio_horizontal_color");
             }
 
-            //En espejo respecto de la horizontal en escala de grises
+            //Mirror vertical gray
             #pragma omp section
             {
-                (void)mirror_horizontal_gray("filepath");
+                (void)mirror_vertical_gray("Images/Original/espacio.bmp", "Images/Result/VerticalGray/espacio_vertical_gray");
             }
 
-            //En espejo respecto a la vertical en escala de grises
+            //Mirror vertical color
             #pragma omp section
             {
-                (void)mirror_vertical_gray("filepath");
+                (void)mirror_vertical_color("Images/Original/espacio.bmp", "Images/Result/VerticalColor/espacio_vertical_color");
             }
 
-            //Efecto de desenfoque con un kernel de 55 hasta 155
+            //Blur (55 to 155)
             #pragma omp section
             {
-                (void)blurred_kernel("filepath");
-            }
+                //TODO ask blur ratio
 
+                //TODO if cycle to go over all images in the Original folder
+                (void)blurred_kernel("Images/Original/espacio.bmp", "Images/Result/Blur/espacio_blurred");
+            }
         }
     }
     
@@ -73,6 +76,6 @@ int main() {
     fprintf(report_file, "Localidades totales\n");
     fclose(report_file);
 
-    printf("El valor del tiempo es %d.\n", tiempo_ejecucion);
+    printf("El valor del tiempo es %d.\n", tiempo_ejecucion);   //TODO
     return 0;
 }
