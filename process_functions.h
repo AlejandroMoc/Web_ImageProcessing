@@ -5,7 +5,7 @@
 ///FUNCIONES
 
 //Escala gris
-extern void gray_scale(char input_path[40], char name_output[40]) {
+extern int gray_scale(char input_path[40], char name_output[40]) {
     printf("\nEn escala de grises\n");
     FILE *image, *outputImage;
     char output_path[100] = "./";
@@ -33,10 +33,11 @@ extern void gray_scale(char input_path[40], char name_output[40]) {
 
     fclose(image);
     fclose(outputImage);
+    return 0;
 }
 
 //Mirror horizontal
-extern void mirror_horizontal_gray(char input_path[40], char name_output[40]) {
+extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal en escala de grises\n");
     FILE *image, *outputImage;
     char output_path[100] = "./";
@@ -80,9 +81,10 @@ extern void mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     free(gray_row);
     fclose(image);
     fclose(outputImage);
+    return 0;
 }
 
-extern void mirror_horizontal_color(char input_path[40], char name_output[40]) {
+extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal a color\n");
     FILE *image, *outputImage;
     char output_path[100] = "./";
@@ -123,10 +125,11 @@ extern void mirror_horizontal_color(char input_path[40], char name_output[40]) {
     free(mirrored_row);
     fclose(image);
     fclose(outputImage);
+    return 0;
 }
 
 //Mirror vertical
-extern void mirror_vertical_gray(char input_path[80], char name_output[80]){
+extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical en escala de grises\n");
     FILE *image, *outputImage;
     char output_path[100] = "./";
@@ -173,9 +176,10 @@ extern void mirror_vertical_gray(char input_path[80], char name_output[80]){
     free(rows);
     fclose(image);
     fclose(outputImage);
+    return 0;
 }
 
-extern void mirror_vertical_color(char input_path[80], char name_output[80]){
+extern int mirror_vertical_color(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical a color\n");
     FILE *image, *outputImage;
     char output_path[100] = "./";
@@ -212,6 +216,7 @@ extern void mirror_vertical_color(char input_path[80], char name_output[80]){
     free(rows);
     fclose(image);
     fclose(outputImage);
+    return 0;
 }
 
 //Blur
