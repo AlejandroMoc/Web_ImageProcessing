@@ -1,6 +1,32 @@
 //Grayscale
 extern void gray_scale(char input_path[40], char name_output[40]) {
     printf("\nEn escala de grises\n");
+    FILE *image, *outputImage;
+    char output_path[100] = "./";
+    strcat(output_path, name_output);
+    strcat(output_path, ".bmp");
+
+    image = fopen(input_path, "rb");
+    outputImage = fopen(output_path, "wb");
+
+    unsigned char r, g, b, pixel;
+    unsigned char header[54];
+    fread(header, sizeof(unsigned char), 54, image);
+    fwrite(header, sizeof(unsigned char), 54, outputImage);
+
+    while(!feof(image)){
+        b = fgetc(image);
+        g = fgetc(image);
+        r = fgetc(image);
+        if (feof(image)) break;
+        pixel = 0.21*r + 0.72*g + 0.07*b;
+        fputc(pixel, outputImage);
+        fputc(pixel, outputImage);
+        fputc(pixel, outputImage);
+    }
+
+    fclose(image);
+    fclose(outputImage);
 }
 
 //Mirror horizontal
@@ -19,7 +45,7 @@ extern void mirror_vertical_gray(char input_path[80], char name_output[80]){
     char output_path[80] = "./";
     strcat(output_path, name_output);
     strcat(output_path, ".bmp");
-    printf("%s\n", output_path);
+
     image = fopen(input_path,"rb");
     outputImage = fopen(output_path,"wb");
 
@@ -77,7 +103,7 @@ extern void mirror_vertical_color(char input_path[80], char name_output[80]){
     char output_path[80] = "./";
     strcat(output_path, name_output);
     strcat(output_path, ".bmp");
-    printf("%s\n", output_path);
+
     image = fopen(input_path,"rb");
     outputImage = fopen(output_path,"wb");
 

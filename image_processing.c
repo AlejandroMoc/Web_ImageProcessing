@@ -46,12 +46,14 @@ int main() {
             //Mirror vertical gray
             #pragma omp section
             {
+                //TODO if cycle to go over all images in the Original folder
                 (void)mirror_vertical_gray("Images/Original/espacio.bmp", "Images/Result/VerticalGray/espacio_vertical_gray");
             }
 
             //Mirror vertical color
             #pragma omp section
             {
+                //TODO if cycle to go over all images in the Original folder
                 (void)mirror_vertical_color("Images/Original/espacio.bmp", "Images/Result/VerticalColor/espacio_vertical_color");
             }
 
