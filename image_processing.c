@@ -9,6 +9,22 @@
 //Ejecución principal
 int main() {
 
+    //Directorios, crear si no existen
+    const char *input_dir = "Images/Original";
+    const char *output_dir_gray = "Images/Result/Gray";
+    const char *output_dir_horizontalgray = "Images/Result/HorizontalGray";
+    const char *output_dir_horizontalcolor = "Images/Result/HorizontalColor";
+    const char *output_dir_verticalgray = "Images/Result/VerticalGray";
+    const char *output_dir_verticalcolor = "Images/Result/VerticalColor";
+    const char *output_dir_blur = "Images/Result/Blur";
+
+    mkdir(output_dir_gray, 0777);
+    mkdir(output_dir_horizontalgray, 0777);
+    mkdir(output_dir_horizontalcolor, 0777);
+    mkdir(output_dir_verticalgray, 0777);
+    mkdir(output_dir_verticalcolor, 0777);
+    mkdir(output_dir_blur, 0777);
+
     //Abrir archivo de reporte
     FILE *report_file;
     char data[80] = "report.txt";
