@@ -61,10 +61,10 @@ int process_images_gray(const char *input_dir, const char *output_dir_gray) {
 
         //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_gray.bmp", output_dir_gray, base_filename);
-        printf("Processing gray: %s -> %s\n", input_path, output_path_gray);
+        printf("Procesando escala de grises: %s -> %s\n", input_path, output_path_gray);
 
         if (gray_scale(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing gray for %s\n", input_path);
+            fprintf(stderr, "Error al procesar escala de grises para %s\n", input_path);
         }
     }
 
@@ -116,10 +116,10 @@ int process_images_mirror_horizontal_gray(const char *input_dir, const char *out
 
         //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_gray.bmp", output_dir_gray, base_filename);
-        printf("Processing mirror horizontal gray: %s -> %s\n", input_path, output_path_gray);
+        printf("Procesando volteado horizontal a byn: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_horizontal_gray(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing mirror horizontal gray for %s\n", input_path);
+            fprintf(stderr, "Error al procesar volteado horizontal a byn para %s\n", input_path);
         }
     }
 
@@ -171,10 +171,10 @@ int process_images_mirror_horizontal_color(const char *input_dir, const char *ou
 
         //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_color.bmp", output_dir_gray, base_filename);
-        printf("Processing mirror horizontal color: %s -> %s\n", input_path, output_path_gray);
+        printf("Procesando volteado horizontal a color: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_horizontal_color(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing mirror horizontal color for %s\n", input_path);
+            fprintf(stderr, "Error al procesar volteado horizontal a color para %s\n", input_path);
         }
     }
 
@@ -226,10 +226,10 @@ int process_images_mirror_vertical_gray(const char *input_dir, const char *outpu
 
         //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_gray.bmp", output_dir_gray, base_filename);
-        printf("Processing mirror vertical gray: %s -> %s\n", input_path, output_path_gray);
+        printf("Procesando volteado verticalmente a byn: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_vertical_gray(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing mirror vertical gray for %s\n", input_path);
+            fprintf(stderr, "Error al procesar volteado verticalmente a byn para %s\n", input_path);
         }
     }
 
@@ -281,10 +281,10 @@ int process_images_mirror_vertical_color(const char *input_dir, const char *outp
 
         //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_color.bmp", output_dir_gray, base_filename);
-        printf("Processing mirror vertical color: %s -> %s\n", input_path, output_path_gray);
+        printf("Procesando volteado verticalmente a color: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_vertical_color(input_path, output_path_gray) != 0) {
-        fprintf(stderr, "Error processing mirror vertical color for %s\n", input_path);
+            fprintf(stderr, "Error al procesar volteado verticalmente a color para %s\n", input_path);
         }
     }
 
@@ -354,7 +354,7 @@ int process_images_blur_color(const char *input_dir, const char *output_dir_blur
 //Ejecución principal
 int main() {
 
-    //Directorios, crear si no existen
+    //Directorios, crearlos si no existen
     const char *input_dir = "Images/Original";
     const char *output_dir_gray = "Images/Result/Gray";
     const char *output_dir_horizontalgray = "Images/Result/HorizontalGray";
@@ -370,7 +370,6 @@ int main() {
     MKDIR(output_dir_verticalcolor);
     MKDIR(output_dir_blur);
     
-
     //Abrir archivo de reporte
     FILE *report_file;
     char data[80] = "report.txt";
@@ -380,45 +379,42 @@ int main() {
         exit(1);
     }
 
-    //TODO open 100 pictures
-
-    //Paralelization
+    //Paralelización
     #pragma omp parallel
     {
         #pragma omp sections
         {
-            //Grayscale
+            //Escala de grises
             #pragma omp section
             {
                 process_images_gray(input_dir, output_dir_gray);
             }
 
-            //Mirror horizontal gray
+            //Voltear horizontalmente a byn
             #pragma omp section
             {
                 process_images_mirror_horizontal_gray(input_dir, output_dir_horizontalgray);
             }
 
-            //Mirror horizontal color
+            //Voltear horizontalmente a color
             #pragma omp section
             {
                 process_images_mirror_horizontal_color(input_dir, output_dir_horizontalcolor);
             }
 
-            //Mirror vertical gray
+            //Voltear verticalmente a byn
             #pragma omp section
             {
-                //TODO if cycle to go over all images in the Original folder
                 process_images_mirror_vertical_gray(input_dir, output_dir_verticalgray);
             }
 
-            //Mirror vertical color
+            //Voltear verticalmente a color
             #pragma omp section
             {
                 process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor);
             }
 
-            //Blur (55 to 155)
+            //Desenfoque (55 to 155)
             #pragma omp section
             {
                 process_images_blur_color(input_dir, output_dir_blur ,55);

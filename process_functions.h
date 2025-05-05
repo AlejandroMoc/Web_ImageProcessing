@@ -41,7 +41,7 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
     return 0;
 }
 
-//Mirror horizontal
+//Voltear horizontalmente a
 extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal en escala de grises\n");
     FILE *image, *outputImage;
@@ -133,7 +133,7 @@ extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
     return 0;
 }
 
-//Mirror vertical
+//Voltear verticalmente
 extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical en escala de grises\n");
     FILE *image, *outputImage;
