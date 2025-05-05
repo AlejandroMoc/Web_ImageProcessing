@@ -49,7 +49,7 @@ extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
 
     if (!image || !outputImage) {
         printf("Error abriendo archivos.");
-        return;
+        return 0;
     }
 
     unsigned char header[54];
@@ -96,7 +96,7 @@ extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
 
     if (!image || !outputImage) {
         printf("Error abriendo archivos.");
-        return;
+        return 0;
     }
 
     unsigned char header[54];
@@ -141,7 +141,7 @@ extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
 
     if (!image || !outputImage) {
         printf("Error abriendo archivos.");
-        return;
+        return 0;
     }
 
     unsigned char header[54];
@@ -191,7 +191,7 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
 
     if (!image || !outputImage) {
         printf("Error abriendo archivos.\n");
-        return;
+        return 0;
     }
 
     unsigned char header[54];
@@ -220,6 +220,85 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
 }
 
 //Blur
-extern void blurred_kernel(char input_path[40], char name_output[40]) {
-    printf("\nEfecto de desenfoque con un kernel de 55 hasta 155\n");
+extern int blur_image_color(char input_path[80], char name_output[80], int kernel_size) {
+    if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
+        printf("Kernel inválido. Debe ser impar y entre 5 y 15.\n");
+        return 1;
+    }
+
+    printf("\nAplicando blur con kernel %dx%d\n", kernel_size, kernel_size);
+
+    FILE *image, *outputImage;
+    char output_path[100] = "./";
+    strcat(output_path, name_output);
+    strcat(output_path, ".bmp");
+
+    image = fopen(input_path, "rb");
+    outputImage = fopen(output_path, "wb");
+
+    if (!image || !outputImage) {
+        printf("Error abriendo archivos.\n");
+        return 1;
+    }
+
+    unsigned char header[54];
+    fread(header, sizeof(unsigned char), 54, image);
+    fwrite(header, sizeof(unsigned char), 54, outputImage);
+
+    int width = *(int*)&header[18];
+    int height = *(int*)&header[22];
+    int row_padded = (width * 3 + 3) & (~3);
+
+    unsigned char** input_rows = (unsigned char**)malloc(height * sizeof(unsigned char*));
+    unsigned char** output_rows = (unsigned char**)malloc(height * sizeof(unsigned char*));
+
+    for (int i = 0; i < height; i++) {
+        input_rows[i] = (unsigned char*)malloc(row_padded);
+        output_rows[i] = (unsigned char*)malloc(row_padded);
+        fread(input_rows[i], sizeof(unsigned char), row_padded, image);
+    }
+
+    int k = kernel_size / 2;
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int sumB = 0, sumG = 0, sumR = 0, count = 0;
+
+            for (int dy = -k; dy <= k; dy++) {
+                for (int dx = -k; dx <= k; dx++) {
+                    int ny = y + dy;
+                    int nx = x + dx;
+
+                    if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+                        int idx = nx * 3;
+                        sumB += input_rows[ny][idx + 0];
+                        sumG += input_rows[ny][idx + 1];
+                        sumR += input_rows[ny][idx + 2];
+                        count++;
+                    }
+                }
+            }
+
+            int index = x * 3;
+            output_rows[y][index + 0] = sumB / count;
+            output_rows[y][index + 1] = sumG / count;
+            output_rows[y][index + 2] = sumR / count;
+        }
+
+        // Copiar padding sin cambios
+        for (int p = width * 3; p < row_padded; p++) {
+            output_rows[y][p] = input_rows[y][p];
+        }
+    }
+
+    for (int i = 0; i < height; i++) {
+        fwrite(output_rows[i], sizeof(unsigned char), row_padded, outputImage);
+        free(input_rows[i]);
+        free(output_rows[i]);
+    }
+
+    free(input_rows);
+    free(output_rows);
+    fclose(image);
+    fclose(outputImage);
+    return 0;
 }

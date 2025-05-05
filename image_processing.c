@@ -314,6 +314,64 @@ int process_images_mirror_vertical_color(const char *input_dir, const char *outp
     return 0;
 }
 
+int process_images_blur_color(const char *input_dir, const char *output_dir_blur, int kernel_size) {
+    if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
+        printf("Kernel inválido. Debe ser impar y entre 5 y 15.\n");
+        return 1;
+    }
+
+    DIR *dir;
+    struct dirent *ent;
+    char input_path[256];
+    char output_path_blur[256];
+    char base_filename[256];
+    char *dot;
+
+    dir = opendir(input_dir);
+    if (dir == NULL) {
+        perror("Error abriendo el directorio");
+        return 1;
+    }
+
+    while ((ent = readdir(dir)) != NULL) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
+            continue;
+        }
+
+        snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
+
+        struct stat path_stat;
+        if (stat(input_path, &path_stat) != 0) {
+            fprintf(stderr, "Error obteniendo información de %s\n", input_path);
+            continue;
+        }
+
+        if (!S_ISREG(path_stat.st_mode)) {
+            printf("Saltando archivo no regular: %s\n", input_path);
+            continue;
+        }
+
+        dot = strrchr(ent->d_name, '.');
+        if (dot != NULL) {
+            size_t base_len = dot - ent->d_name;
+            strncpy(base_filename, ent->d_name, base_len);
+            base_filename[base_len] = '\0';
+        } else {
+            strcpy(base_filename, ent->d_name);
+        }
+
+        snprintf(output_path_blur, sizeof(output_path_blur), "%s/%s_blur_%dx%d.bmp", output_dir_blur, base_filename, kernel_size, kernel_size);
+
+        printf("Procesando blur: %s -> %s\n", input_path, output_path_blur);
+
+        if (blur_image_color(input_path, output_path_blur, kernel_size) != 0) {
+            fprintf(stderr, "Error aplicando blur a %s\n", input_path);
+        }
+    }
+
+    closedir(dir);
+    return 0;
+}
 
 
 
@@ -390,10 +448,8 @@ int main() {
             //Blur (55 to 155)
             #pragma omp section
             {
-                //TODO ask blur ratio
-
                 //TODO if cycle to go over all images in the Original folder
-                (void)blurred_kernel("Images/Original/espacio.bmp", "Images/Result/Blur/espacio_blurred");
+                process_images_blur_color(input_dir, output_dir_blur ,55);
             }
         }
     }
