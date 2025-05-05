@@ -16,7 +16,7 @@
 //gcc -fopenmp image_processing.c
 //./a.out
 
-
+//Funciones para múltiples imágenes
 int process_images_gray(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
@@ -27,7 +27,7 @@ int process_images_gray(const char *input_dir, const char *output_dir_gray) {
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error opening directory");
+        perror("Error al abrir el directorio");
         return 1;
     }
 
@@ -35,22 +35,21 @@ int process_images_gray(const char *input_dir, const char *output_dir_gray) {
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
             continue;
         }
-
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        // Check if it's a regular file
+        //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error getting file status for %s\n", input_path);
+            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Skipping non-regular file: %s\n", input_path);
+            printf("Omitiendo archivo no regular: %s\n", input_path);
             continue;
         }
 
-        // Extract filename without extension
+        //Extraer nombre de archivo sin extensión
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -60,16 +59,12 @@ int process_images_gray(const char *input_dir, const char *output_dir_gray) {
             strcpy(base_filename, ent->d_name);
         }
 
-        // Construct output paths
+        //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_gray.bmp", output_dir_gray, base_filename);
-
-        // Process the image
         printf("Processing gray: %s -> %s\n", input_path, output_path_gray);
 
-        // Call the mirroring function
-        
         if (gray_scale(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing gray mirror for %s\n", input_path);
+            fprintf(stderr, "Error processing gray for %s\n", input_path);
         }
     }
 
@@ -87,7 +82,7 @@ int process_images_mirror_horizontal_gray(const char *input_dir, const char *out
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error opening directory");
+        perror("Error al abrir el directorio");
         return 1;
     }
 
@@ -95,22 +90,21 @@ int process_images_mirror_horizontal_gray(const char *input_dir, const char *out
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
             continue;
         }
-
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        // Check if it's a regular file
+        //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error getting file status for %s\n", input_path);
+            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Skipping non-regular file: %s\n", input_path);
+            printf("Omitiendo archivo no regular: %s\n", input_path);
             continue;
         }
 
-        // Extract filename without extension
+        //Extraer nombre de archivo sin extensión
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -120,15 +114,12 @@ int process_images_mirror_horizontal_gray(const char *input_dir, const char *out
             strcpy(base_filename, ent->d_name);
         }
 
-        // Construct output paths
+        //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_gray.bmp", output_dir_gray, base_filename);
+        printf("Processing mirror horizontal gray: %s -> %s\n", input_path, output_path_gray);
 
-        // Process the image
-        printf("Processing gray: %s -> %s\n", input_path, output_path_gray);
-
-        // Call the mirroring function
         if (mirror_horizontal_gray(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing gray mirror for %s\n", input_path);
+            fprintf(stderr, "Error processing mirror horizontal gray for %s\n", input_path);
         }
     }
 
@@ -146,7 +137,7 @@ int process_images_mirror_horizontal_color(const char *input_dir, const char *ou
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error opening directory");
+        perror("Error al abrir el directorio");
         return 1;
     }
 
@@ -154,22 +145,21 @@ int process_images_mirror_horizontal_color(const char *input_dir, const char *ou
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
             continue;
         }
-
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        // Check if it's a regular file
+        //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error getting file status for %s\n", input_path);
+            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Skipping non-regular file: %s\n", input_path);
+            printf("Omitiendo archivo no regular: %s\n", input_path);
             continue;
         }
 
-        // Extract filename without extension
+        //Extraer nombre de archivo sin extensión
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -179,15 +169,12 @@ int process_images_mirror_horizontal_color(const char *input_dir, const char *ou
             strcpy(base_filename, ent->d_name);
         }
 
-        // Construct output paths
+        //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_color.bmp", output_dir_gray, base_filename);
+        printf("Processing mirror horizontal color: %s -> %s\n", input_path, output_path_gray);
 
-        // Process the image
-        printf("Processing gray: %s -> %s\n", input_path, output_path_gray);
-
-        // Call the mirroring function
         if (mirror_horizontal_color(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing gray mirror for %s\n", input_path);
+            fprintf(stderr, "Error processing mirror horizontal color for %s\n", input_path);
         }
     }
 
@@ -205,7 +192,7 @@ int process_images_mirror_vertical_gray(const char *input_dir, const char *outpu
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error opening directory");
+        perror("Error al abrir el directorio");
         return 1;
     }
 
@@ -213,22 +200,21 @@ int process_images_mirror_vertical_gray(const char *input_dir, const char *outpu
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
             continue;
         }
-
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        // Check if it's a regular file
+        //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error getting file status for %s\n", input_path);
+            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Skipping non-regular file: %s\n", input_path);
+            printf("Omitiendo archivo no regular: %s\n", input_path);
             continue;
         }
 
-        // Extract filename without extension
+        //Extraer nombre de archivo sin extensión
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -238,15 +224,12 @@ int process_images_mirror_vertical_gray(const char *input_dir, const char *outpu
             strcpy(base_filename, ent->d_name);
         }
 
-        // Construct output paths
+        //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_gray.bmp", output_dir_gray, base_filename);
+        printf("Processing mirror vertical gray: %s -> %s\n", input_path, output_path_gray);
 
-        // Process the image
-        printf("Processing gray: %s -> %s\n", input_path, output_path_gray);
-
-        // Call the mirroring function
         if (mirror_vertical_gray(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error processing gray mirror for %s\n", input_path);
+            fprintf(stderr, "Error processing mirror vertical gray for %s\n", input_path);
         }
     }
 
@@ -264,7 +247,7 @@ int process_images_mirror_vertical_color(const char *input_dir, const char *outp
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error opening directory");
+        perror("Error al abrir el directorio");
         return 1;
     }
 
@@ -272,22 +255,21 @@ int process_images_mirror_vertical_color(const char *input_dir, const char *outp
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
             continue;
         }
-
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        // Check if it's a regular file
+        //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error getting file status for %s\n", input_path);
+            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Skipping non-regular file: %s\n", input_path);
+            printf("Omitiendo archivo no regular: %s\n", input_path);
             continue;
         }
 
-        // Extract filename without extension
+        //Extraer nombre de archivo sin extensión
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -297,16 +279,12 @@ int process_images_mirror_vertical_color(const char *input_dir, const char *outp
             strcpy(base_filename, ent->d_name);
         }
 
-        // Construct output paths
+        //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_color.bmp", output_dir_gray, base_filename);
+        printf("Processing mirror vertical color: %s -> %s\n", input_path, output_path_gray);
 
-        // Process the image
-        printf("Processing gray: %s -> %s\n", input_path, output_path_gray);
-
-        // Call the mirroring function
-        // Call the mirroring function
         if (mirror_vertical_color(input_path, output_path_gray) != 0) {
-        fprintf(stderr, "Error processing gray mirror for %s\n", input_path);
+        fprintf(stderr, "Error processing mirror vertical color for %s\n", input_path);
         }
     }
 
@@ -329,7 +307,7 @@ int process_images_blur_color(const char *input_dir, const char *output_dir_blur
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error abriendo el directorio");
+        perror("Error al abrir el directorio");
         return 1;
     }
 
@@ -337,7 +315,6 @@ int process_images_blur_color(const char *input_dir, const char *output_dir_blur
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
             continue;
         }
-
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
         struct stat path_stat;
@@ -347,7 +324,7 @@ int process_images_blur_color(const char *input_dir, const char *output_dir_blur
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Saltando archivo no regular: %s\n", input_path);
+            printf("Omitiendo archivo no regular: %s\n", input_path);
             continue;
         }
 
@@ -362,17 +339,16 @@ int process_images_blur_color(const char *input_dir, const char *output_dir_blur
 
         snprintf(output_path_blur, sizeof(output_path_blur), "%s/%s_blur_%dx%d.bmp", output_dir_blur, base_filename, kernel_size, kernel_size);
 
-        printf("Procesando blur: %s -> %s\n", input_path, output_path_blur);
+        printf("Procesando desenfoque: %s -> %s\n", input_path, output_path_blur);
 
         if (blur_image_color(input_path, output_path_blur, kernel_size) != 0) {
-            fprintf(stderr, "Error aplicando blur a %s\n", input_path);
+            fprintf(stderr, "Error aplicando desenfoque a %s\n", input_path);
         }
     }
 
     closedir(dir);
     return 0;
 }
-
 
 
 //Ejecución principal
@@ -414,8 +390,6 @@ int main() {
             //Grayscale
             #pragma omp section
             {
-                
-                //(void)gray_scale("Images/Original/espacio.bmp", "Images/Result/Gray/espacio_gray");
                 process_images_gray(input_dir, output_dir_gray);
             }
 
@@ -441,14 +415,12 @@ int main() {
             //Mirror vertical color
             #pragma omp section
             {
-                //TODO if cycle to go over all images in the Original folder
                 process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor);
             }
 
             //Blur (55 to 155)
             #pragma omp section
             {
-                //TODO if cycle to go over all images in the Original folder
                 process_images_blur_color(input_dir, output_dir_blur ,55);
             }
         }

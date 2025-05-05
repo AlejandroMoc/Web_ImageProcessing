@@ -15,6 +15,11 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
     image = fopen(input_path, "rb");
     outputImage = fopen(output_path, "wb");
 
+    if (!image || !outputImage) {
+        printf("Error abriendo archivos.\n");
+        return 1;
+    }
+
     unsigned char r, g, b, pixel;
     unsigned char header[54];
     fread(header, sizeof(unsigned char), 54, image);
@@ -48,8 +53,8 @@ extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     outputImage = fopen(output_path, "wb");
 
     if (!image || !outputImage) {
-        printf("Error abriendo archivos.");
-        return 0;
+        printf("Error abriendo archivos.\n");
+        return 1;
     }
 
     unsigned char header[54];
@@ -95,8 +100,8 @@ extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
     outputImage = fopen(output_path, "wb");
 
     if (!image || !outputImage) {
-        printf("Error abriendo archivos.");
-        return 0;
+        printf("Error abriendo archivos.\n");
+        return 1;
     }
 
     unsigned char header[54];
@@ -191,7 +196,7 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
 
     if (!image || !outputImage) {
         printf("Error abriendo archivos.\n");
-        return 0;
+        return 1;
     }
 
     unsigned char header[54];
