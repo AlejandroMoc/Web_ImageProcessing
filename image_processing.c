@@ -1,11 +1,12 @@
+#include <omp.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "process_functions.h"
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include "process_functions.h"
 
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
@@ -379,6 +380,21 @@ int main() {
         exit(1);
     }
 
+    //Solicitar valor de desenfoque
+    int blur_ratio;
+    do {
+      printf("Introduce un no. impar entre 55 y 155: ");
+      scanf("%d", &blur_ratio);
+
+      if (blur_ratio < 55 || blur_ratio > 155 || blur_ratio % 2 == 0) {
+        printf("Entrada inválida. Por favor introduce un valor impar entre 55 y 155.\n");
+      }
+    } while (blur_ratio < 55 || blur_ratio > 155 || blur_ratio % 2 == 0);
+    printf("Elegiste %d como valor del desenfoque.\n", blur_ratio);
+
+    //Empezar conteo de tiempo
+    const double start_time = omp_get_wtime();
+
     //Paralelización
     #pragma omp parallel
     {
@@ -414,24 +430,27 @@ int main() {
                 process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor);
             }
 
-            //Desenfoque (55 to 155)
+            //Desenfoque (valor de 55 a 155)
             #pragma omp section
             {
-                process_images_blur_color(input_dir, output_dir_blur ,55);
+                process_images_blur_color(input_dir, output_dir_blur , blur_ratio);
             }
         }
     }
-    
-    int tiempo_ejecucion = 1;
 
-    //TODO generar un archivo de texto de salida (.txt), donde indique el no. de localidades totales
-    //leidas por cada archivo original y las localidades totales de salida escritas después del procesamiento
-
+    //Generar un archivo de texto de salida (.txt), 
+    //donde se indique el no. de localidades totales leidas
+    //y escritas por cada archivo original
     fprintf(report_file, "Reporte de resultados\n");
     fprintf(report_file, "Localidades leídas\n");
     fprintf(report_file, "Localidades totales\n");
+
+    //Calcular tiempo de ejecución
+    const double end_time = omp_get_wtime();
+    printf("El valor del tiempo que tomó fue %lf segundos\n", (end_time - start_time));
+    fprintf(report_file, "El valor del tiempo que tomó fue %lf segundos\n", (end_time - start_time));
     fclose(report_file);
 
-    printf("El valor del tiempo es %d.\n", tiempo_ejecucion);   //TODO
+
     return 0;
 }
