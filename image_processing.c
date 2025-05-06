@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
 #else
@@ -394,16 +395,6 @@ int main() {
     MKDIR(output_dir_verticalcolor);
     MKDIR(output_dir_blur);
     
-
-    //Abrir archivo de reporte
-    FILE *report_file;
-    char data[80] = "report.txt";
-    report_file = fopen(data, "w");
-    if (report_file == NULL){
-        printf("Archivo nulo\n");
-        exit(1);
-    }
-
     //TODO open 100 pictures
 
     //Paralelization
@@ -453,17 +444,5 @@ int main() {
             }
         }
     }
-    
-    int tiempo_ejecucion = 1;
-
-    //TODO generar un archivo de texto de salida (.txt), donde indique el no. de localidades totales
-    //leidas por cada archivo original y las localidades totales de salida escritas después del procesamiento
-
-    fprintf(report_file, "Reporte de resultados\n");
-    fprintf(report_file, "Localidades leídas\n");
-    fprintf(report_file, "Localidades totales\n");
-    fclose(report_file);
-
-    printf("El valor del tiempo es %d.\n", tiempo_ejecucion);   //TODO
     return 0;
 }
