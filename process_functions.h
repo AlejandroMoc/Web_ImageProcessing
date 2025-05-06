@@ -325,7 +325,7 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
 //Blur
 extern int blur_image_color(char input_path[80], char name_output[80], int kernel_size) {
     if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
-        printf("Kernel inválido. Debe ser impar y entre 5 y 15.\n");
+        printf("Kernel inválido. Debe ser impar y entre 55 y 155.\n");
         return 1;
     }
 
@@ -367,22 +367,49 @@ extern int blur_image_color(char input_path[80], char name_output[80], int kerne
     }
 
     int k = kernel_size / 2;
+
+    // Paso intermedio: blur horizontal
+    unsigned char** temp_rows = (unsigned char**)malloc(height * sizeof(unsigned char*));
+    for (int y = 0; y < height; y++) {
+        temp_rows[y] = (unsigned char*)malloc(row_padded);
+        for (int x = 0; x < width; x++) {
+            int sumB = 0, sumG = 0, sumR = 0, count = 0;
+
+            for (int dx = -k; dx <= k; dx++) {
+                int nx = x + dx;
+                if (nx >= 0 && nx < width) {
+                    int idx = nx * 3;
+                    sumB += input_rows[y][idx + 0];
+                    sumG += input_rows[y][idx + 1];
+                    sumR += input_rows[y][idx + 2];
+                    count++;
+                }
+            }
+
+            int index = x * 3;
+            temp_rows[y][index + 0] = sumB / count;
+            temp_rows[y][index + 1] = sumG / count;
+            temp_rows[y][index + 2] = sumR / count;
+        }
+
+        for (int p = width * 3; p < row_padded; p++) {
+            temp_rows[y][p] = input_rows[y][p];
+        }
+    }
+
+    // Paso final: blur vertical
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int sumB = 0, sumG = 0, sumR = 0, count = 0;
 
             for (int dy = -k; dy <= k; dy++) {
-                for (int dx = -k; dx <= k; dx++) {
-                    int ny = y + dy;
-                    int nx = x + dx;
-
-                    if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
-                        int idx = nx * 3;
-                        sumB += input_rows[ny][idx + 0];
-                        sumG += input_rows[ny][idx + 1];
-                        sumR += input_rows[ny][idx + 2];
-                        count++;
-                    }
+                int ny = y + dy;
+                if (ny >= 0 && ny < height) {
+                    int idx = x * 3;
+                    sumB += temp_rows[ny][idx + 0];
+                    sumG += temp_rows[ny][idx + 1];
+                    sumR += temp_rows[ny][idx + 2];
+                    count++;
                 }
             }
 
@@ -392,24 +419,27 @@ extern int blur_image_color(char input_path[80], char name_output[80], int kerne
             output_rows[y][index + 2] = sumR / count;
         }
 
-        // Copiar padding sin cambios
         for (int p = width * 3; p < row_padded; p++) {
-            output_rows[y][p] = input_rows[y][p];
+            output_rows[y][p] = temp_rows[y][p];
         }
     }
 
+    // Escritura y liberación de memoria
     for (int i = 0; i < height; i++) {
         fwrite(output_rows[i], sizeof(unsigned char), row_padded, outputImage);
         free(input_rows[i]);
         free(output_rows[i]);
+        free(temp_rows[i]);
         localidades_escritas += row_padded;
     }
 
     free(input_rows);
     free(output_rows);
+    free(temp_rows);
     fclose(image);
     fclose(outputImage);
-    // Escribir en el reporte
+
+    // Reporte
     report = fopen("report.txt", "a"); 
     if (report != NULL) {
         fprintf(report, "Imagen blur_image_color: %s\n", input_path);
@@ -419,8 +449,10 @@ extern int blur_image_color(char input_path[80], char name_output[80], int kerne
     } else {
         perror("No se pudo abrir el archivo de reporte");
     }
+
     return 0;
 }
+
 
 
 //FUNCIONES POR LOTES

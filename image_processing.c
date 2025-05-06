@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "process_functions.h"
-
+#define NUM_THREADS 18
 
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
@@ -59,6 +59,7 @@ int main() {
     printf("Elegiste %d como valor del desenfoque.\n", blur_ratio);
 
     //Empezar conteo de tiempo
+    omp_set_num_threads(NUM_THREADS);
     const double start_time = omp_get_wtime();
 
     //Paralelización
@@ -66,36 +67,6 @@ int main() {
     {
         #pragma omp sections
         {
-            //Escala de grises
-            #pragma omp section
-            {
-                process_images_gray(input_dir, output_dir_gray);
-            }
-
-            //Voltear horizontalmente a byn
-            #pragma omp section
-            {
-                process_images_mirror_horizontal_gray(input_dir, output_dir_horizontalgray);
-            }
-
-            //Voltear horizontalmente a color
-            #pragma omp section
-            {
-                process_images_mirror_horizontal_color(input_dir, output_dir_horizontalcolor);
-            }
-
-            //Voltear verticalmente a byn
-            #pragma omp section
-            {
-                process_images_mirror_vertical_gray(input_dir, output_dir_verticalgray);
-            }
-
-            //Voltear verticalmente a color
-            #pragma omp section
-            {
-                process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor);
-            }
-
             //Desenfoque (valor de 55 a 155)
             #pragma omp section
             {
