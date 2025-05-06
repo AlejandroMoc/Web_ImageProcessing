@@ -8,7 +8,6 @@
 #include <sys/types.h>
 #include "process_functions.h"
 
-
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
 #else
@@ -20,7 +19,6 @@
 
 //Ejecución principal
 int main() {
-
     //Directorios, crearlos si no existen
     const char *input_dir = "Images/Original";
     const char *output_dir_gray = "Images/Result/Gray";
@@ -36,7 +34,7 @@ int main() {
     MKDIR(output_dir_verticalgray);
     MKDIR(output_dir_verticalcolor);
     MKDIR(output_dir_blur);
-    
+
     //Abrir archivo de reporte
     FILE *report_file;
     char data[80] = "report.txt";
@@ -66,57 +64,71 @@ int main() {
     {
         #pragma omp sections
         {
-            //Escala de grises
             #pragma omp section
-            {
-                process_images_gray(input_dir, output_dir_gray);
-            }
+            { process_images_gray(input_dir, output_dir_gray); }
 
-            //Voltear horizontalmente a byn
             #pragma omp section
-            {
-                process_images_mirror_horizontal_gray(input_dir, output_dir_horizontalgray);
-            }
+            { process_images_mirror_horizontal_gray(input_dir, output_dir_horizontalgray); }
 
-            //Voltear horizontalmente a color
             #pragma omp section
-            {
-                process_images_mirror_horizontal_color(input_dir, output_dir_horizontalcolor);
-            }
+            { process_images_mirror_horizontal_color(input_dir, output_dir_horizontalcolor); }
 
-            //Voltear verticalmente a byn
             #pragma omp section
-            {
-                process_images_mirror_vertical_gray(input_dir, output_dir_verticalgray);
-            }
+            { process_images_mirror_vertical_gray(input_dir, output_dir_verticalgray); }
 
-            //Voltear verticalmente a color
             #pragma omp section
-            {
-                process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor);
-            }
+            { process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor); }
 
-            //Desenfoque (valor de 55 a 155)
             #pragma omp section
-            {
-                process_images_blur_color(input_dir, output_dir_blur , blur_ratio);
-            }
+            { process_images_blur_color(input_dir, output_dir_blur , blur_ratio); }
         }
     }
 
-    //Generar un archivo de texto de salida (.txt), 
-    //donde se indique el no. de localidades totales leidas
-    //y escritas por cada archivo original
+    //Generar un archivo de texto de salida (.txt)
     fprintf(report_file, "Reporte de resultados\n");
     fprintf(report_file, "Localidades leídas\n");
     fprintf(report_file, "Localidades totales\n");
 
     //Calcular tiempo de ejecución
     const double end_time = omp_get_wtime();
-    printf("El valor del tiempo que tomó fue %lf segundos\n", (end_time - start_time));
-    fprintf(report_file, "El valor del tiempo que tomó fue %lf segundos\n", (end_time - start_time));
+    double tiempo_total = end_time - start_time;
+    printf("El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
+    fprintf(report_file, "El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
     fclose(report_file);
 
+    // Leer datos desde el archivo generado
+    report_file = fopen("report.txt", "r");
+    if (!report_file) {
+        perror("Error al reabrir el archivo de reporte para cálculo de MIPS");
+        return 1;
+    }
+
+    int total_localidades = 0;
+    char linea[256];
+    while (fgets(linea, sizeof(linea), report_file)) {
+        if (strstr(linea, "Localidades leídas") || strstr(linea, "Localidades escritas")) {
+            int valor;
+            if (sscanf(linea, "%*[^:]: %d", &valor) == 1) {
+                total_localidades += valor;
+            }
+        }
+    }
+    fclose(report_file);
+
+    long long instrucciones = total_localidades * 20LL;
+    double mips = instrucciones / (tiempo_total * 1e6);
+
+    printf("Total de localidades accedidas: %d\n", total_localidades);
+    printf("Instrucciones aproximadas ejecutadas: %lld\n", instrucciones);
+    printf("MIPS aproximados: %.2f\n", mips);
+
+    report_file = fopen("report.txt", "a");
+    if (report_file != NULL) {
+        fprintf(report_file, "Total de localidades accedidas: %d\n", total_localidades);
+        fprintf(report_file, "Instrucciones ejecutadas (20 por localidad): %lld\n", instrucciones);
+        fprintf(report_file, "MIPS estimados: %.2f\n", mips);
+        fclose(report_file);
+    }
 
     return 0;
 }
