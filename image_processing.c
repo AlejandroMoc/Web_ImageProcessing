@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "process_functions.h"
-#define NUM_THREADS 18
+#define NUM_THREADS 36
 
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
@@ -105,31 +105,38 @@ int main() {
         return 1;
     }
 
-    int total_localidades = 0;
+    long long total_localidades = 0;
     char linea[256];
     while (fgets(linea, sizeof(linea), report_file)) {
         if (strstr(linea, "Localidades leídas") || strstr(linea, "Localidades escritas")) {
-            int valor;
-            if (sscanf(linea, "%*[^:]: %d", &valor) == 1) {
+            long long valor;
+            if (sscanf(linea, "%*[^:]: %lld", &valor) == 1) {
                 total_localidades += valor;
+                if (total_localidades < 0) {
+                    fprintf(stderr, "Ha ocurrido un overflow en el total de localidades.\n");
+                    //fclose(report_file);
+                    return -1;
+                }
             }
         }
     }
     fclose(report_file);
 
     long long instrucciones = total_localidades * 20LL;
-    double mips = instrucciones / (tiempo_total * 1e6);
+    long double mips = instrucciones / (tiempo_total * 1e6);
 
-    printf("Total de localidades accedidas: %d\n", total_localidades);
+    printf("Total de localidades accedidas: %lld\n", total_localidades);
     printf("Instrucciones aproximadas ejecutadas: %lld\n", instrucciones);
-    printf("MIPS aproximados: %.2f\n", mips);
+    printf("MIPS aproximados: %.2Lf\n", mips);
 
     report_file = fopen("report.txt", "a");
     if (report_file != NULL) {
-        fprintf(report_file, "Total de localidades accedidas: %d\n", total_localidades);
+        fprintf(report_file, "Total de localidades accedidas: %lld\n", total_localidades);
         fprintf(report_file, "Instrucciones ejecutadas (20 por localidad): %lld\n", instrucciones);
-        fprintf(report_file, "MIPS estimados: %.2f\n", mips);
+        fprintf(report_file, "MIPS estimados: %.2Lf\n", mips);
         fclose(report_file);
+    } else {
+        perror("Error opening file for appending");
     }
 
     return 0;
