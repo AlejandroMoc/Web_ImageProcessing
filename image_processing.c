@@ -93,8 +93,9 @@ int main() {
 
     //Calcular tiempo de ejecución
     const double end_time = omp_get_wtime();
-    double tiempo_total = end_time - start_time;
-    printf("El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
+    double tiempo_total = (long double)(end_time - start_time);
+
+    printf("El valor del tiempo que tomo fue %lf segundos\n", tiempo_total);
     fprintf(report_file, "El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
     fclose(report_file);
 
@@ -123,11 +124,14 @@ int main() {
     fclose(report_file);
 
     long long instrucciones = total_localidades * 20LL;
-    long double mips = instrucciones / (tiempo_total * 1e6);
+    double mips = (double)instrucciones / (tiempo_total * 1000000.0);
+    double bits = (double)total_localidades/tiempo_total;
 
     printf("Total de localidades accedidas: %lld\n", total_localidades);
     printf("Instrucciones aproximadas ejecutadas: %lld\n", instrucciones);
     printf("MIPS aproximados: %.2Lf\n", mips);
+    printf("Bits por segundo: %.2Lf\n", bits);
+
 
     report_file = fopen("report.txt", "a");
     if (report_file != NULL) {
