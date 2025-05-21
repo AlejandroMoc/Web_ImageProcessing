@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -62,7 +62,7 @@
     <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
    </property>
   </widget>
-  <widget class="Gui::FileChooser" name="fileChooser">
+  <widget class="QFileDialog" name="fileChooser">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -128,7 +128,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Selecciona la máscara</string>
+    <string>Selecciona el núcleo</string>
    </property>
   </widget>
  </widget>

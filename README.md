@@ -6,7 +6,21 @@ Implementación de redes de área amplia y servicios distribuidos
 - A01735331 - Sarai Santiago Lozano
 - A01736353 - Alejandro Daniel Moctezuma Cruz
 
+## Wiki
+
+Si deseas acceder a la Wiki puedes hacer clic [aquí](https://github.com/AlejandroMoc/ImplementaciónRedes/wiki).
+
 ## Archivos a revisar
+
+### Interfaz de usuario
+
+Para abrir la interfaz de usuario y seleccionar la modificación
+aplicada a una imagen, ejecutar el siguiente comando:
+
+    cd UI/
+    python interface_design.py
+
+### Multiprocesamiento de imágenes
 
 El archivo principal puede encontrarse en image_processing.c.
 Para ejecutarlo es necesario colocar las imágenes en la carpeta

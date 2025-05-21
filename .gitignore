@@ -9,4 +9,4 @@ Images/Result/VerticalGray/*.bmp
 report.txt
 *.exe
 
-
+.vscode/
