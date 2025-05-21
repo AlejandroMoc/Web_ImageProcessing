@@ -10,15 +10,15 @@ class Ui_Dialog(object):
         Dialog.setSizePolicy(sizePolicy)
         Dialog.setMinimumSize(QtCore.QSize(390, 300))
         Dialog.setMaximumSize(QtCore.QSize(390, 300))
-        
+
         #Botones de aceptación y cancelación
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(20, 230, 350, 30))
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel | QtWidgets.QDialogButtonBox.StandardButton.Ok)
         
-        self.labelImage = QtWidgets.QLabel(parent=Dialog)
-        self.labelImage.setGeometry(QtCore.QRect(20, 30, 350, 20))
+        self.label_image = QtWidgets.QLabel(parent=Dialog)
+        self.label_image.setGeometry(QtCore.QRect(20, 30, 350, 20))
 
         self.fileLineEdit = QtWidgets.QLineEdit(parent=Dialog)
         self.fileLineEdit.setGeometry(QtCore.QRect(20, 60, 300, 30))
@@ -27,62 +27,79 @@ class Ui_Dialog(object):
         self.browseButton.setGeometry(QtCore.QRect(330, 60, 40, 30))
         self.browseButton.clicked.connect(self.open_file_dialog)
 
-        self.labelFilter = QtWidgets.QLabel(parent=Dialog)
-        self.labelFilter.setGeometry(QtCore.QRect(20, 130, 170, 30))
+        self.label_filter = QtWidgets.QLabel(parent=Dialog)
+        self.label_filter.setGeometry(QtCore.QRect(20, 130, 170, 30))
 
         self.comboBox = QtWidgets.QComboBox(parent=Dialog)
-        self.comboBox.setGeometry(QtCore.QRect(210, 130, 160, 32))
+        self.comboBox.setGeometry(QtCore.QRect(210, 130, 160, 30))
 
         self.spinBox = QtWidgets.QSpinBox(parent=Dialog)
         self.spinBox.setGeometry(QtCore.QRect(300, 180, 70, 30))
 
-        self.labelKernel = QtWidgets.QLabel(parent=Dialog)
-        self.labelKernel.setGeometry(QtCore.QRect(20, 180, 170, 30))
+        self.label_kernel = QtWidgets.QLabel(parent=Dialog)
+        self.label_kernel.setGeometry(QtCore.QRect(20, 180, 170, 30))
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+        #Conectar la señal de cambio de índice
+        self.comboBox.currentIndexChanged.connect(self.updateKernelVisibility)
+
     #Traducciones
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        lang, _ = locale.getlocale()
+        lang, _ = locale.getdefaultlocale()
 
         if lang == "es" or lang == "es_MX":
             Dialog.setWindowTitle(_translate("Dialog", "Procesamiento de imágenes"))
-            self.labelImage.setText(_translate("Dialog", "Selecciona la imagen a procesar"))
-            self.labelFilter.setText(_translate("Dialog", "Selecciona el tipo de filtro"))
-            self.labelKernel.setText(_translate("Dialog", "Selecciona el valor del núcleo"))
+            self.label_image.setText(_translate("Dialog", "Seleccione la imagen a procesar"))
+            self.label_filter.setText(_translate("Dialog", "Selecciona el tipo de filtro"))
+            self.label_kernel.setText(_translate("Dialog", "Selecciona el valor del núcleo"))
             self.browseButton.setText(_translate("Dialog", "..."))
 
+            #Limpiar y añadir elementos traducidos al comboBox
             self.comboBox.clear()
             self.comboBox.addItems([
                 _translate("Dialog", "Original"),
                 _translate("Dialog", "Desenfoque"),
-                _translate("Dialog", "En escala de grises"),
-                _translate("Dialog", "Horizontal a blanco y negro"),
-                _translate("Dialog", "Horizontal a color"),
-                _translate("Dialog", "Vertical a blanco y negro"),
-                _translate("Dialog", "Vertical a color")
+                _translate("Dialog", "Gris"),
+                _translate("Dialog", "Horizontal a BYN"),
+                _translate("Dialog", "Horizontal a Color"),
+                _translate("Dialog", "Vertical a BYN"),
+                _translate("Dialog", "Vertical a Color"),
             ])
         else:
             Dialog.setWindowTitle(_translate("Dialog", "Image Processing"))
-            self.labelImage.setText(_translate("Dialog", "Select the image to process"))
-            self.labelFilter.setText(_translate("Dialog", "Select the filter type"))
-            self.labelKernel.setText(_translate("Dialog", "Select the kernel value"))
+            self.label_image.setText(_translate("Dialog", "Select the image to process"))
+            self.label_filter.setText(_translate("Dialog", "Select the filter type"))
+            self.label_kernel.setText(_translate("Dialog", "Select the kernel value"))
             self.browseButton.setText(_translate("Dialog", "..."))
 
+            #Limpiar y añadir elementos en inglés al comboBox
             self.comboBox.clear()
             self.comboBox.addItems([
                 _translate("Dialog", "Original"),
                 _translate("Dialog", "Blurred"),
-                _translate("Dialog", "Gray Scale"),
+                _translate("Dialog", "Gray"),
                 _translate("Dialog", "Horizontal Gray"),
                 _translate("Dialog", "Horizontal Color"),
                 _translate("Dialog", "Vertical Gray"),
-                _translate("Dialog", "Vertical Color")
+                _translate("Dialog", "Vertical Color"),
             ])
+
+        #Actualizar visibilidad de label_kernel y spinBox
+        self.updateKernelVisibility()
+
+    #Actualizar visibilidad de label_kernel y spinBox
+    def updateKernelVisibility(self):
+        if self.comboBox.currentText() == "Desenfoque" or self.comboBox.currentText() == "Blurred":
+            self.label_kernel.show()
+            self.spinBox.show()
+        else:
+            self.label_kernel.hide()
+            self.spinBox.hide()
 
     #Abrir diálogo de selección de imágenes
     def open_file_dialog(self):
