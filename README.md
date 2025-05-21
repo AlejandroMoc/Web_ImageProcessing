@@ -28,3 +28,7 @@ Para ejecutarlo es necesario colocar las imágenes en la carpeta
 
     gcc -fopenmp image_processing.c
     ./a.out
+
+<!-- ## Licencia
+
+Este proyecto cuenta con la licensia GPLv3, la cual estipula que no se puede vender ni demandar por la auditoría del programa. -->
