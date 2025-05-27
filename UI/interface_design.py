@@ -1,5 +1,12 @@
-import sys, locale
+import os, sys, ctypes, locale
 from PyQt6 import QtCore, QtWidgets
+
+#Cargar la biblioteca compartida
+image_processing = ctypes.CDLL('./image_processing.so')
+
+#Definir los argumentos y el tipo de retorno de la función
+image_processing.process_images_mirror_horizontal_gray.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+image_processing.process_images_mirror_horizontal_gray.restype = None
 
 class Ui_Dialog(object):
     #Generar la IU
@@ -40,8 +47,10 @@ class Ui_Dialog(object):
         self.label_kernel.setGeometry(QtCore.QRect(20, 180, 170, 30))
 
         self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept)
+        #self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.accepted.connect(self.on_accept)
         self.buttonBox.rejected.connect(Dialog.reject)
+
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
         #Conectar la señal de cambio de índice
@@ -50,7 +59,7 @@ class Ui_Dialog(object):
     #Traducciones
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        lang, _ = locale.getdefaultlocale()
+        lang, _ = locale.getlocale()
 
         if lang == "es" or lang == "es_MX":
             Dialog.setWindowTitle(_translate("Dialog", "Procesamiento de imágenes"))
@@ -103,15 +112,41 @@ class Ui_Dialog(object):
 
     #Abrir diálogo de selección de imágenes
     def open_file_dialog(self):
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(
+        file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(
             None,
-            "Selecciona la imagen",
+            "Selecciona las imágenes",
             "",
-            "Archivos PNG (*.png);;Archivos JPG (*.jpg);;Archivos JPEG (*.jpeg);;Archivos BMP (*.bmp)"
+            "Archivos BMP (*.bmp);;Archivos PNG (*.png);;Archivos JPG (*.jpg);;Archivos JPEG (*.jpeg)"
         )
-        if file_name:
-            #Establece la ruta del archivo seleccionado en el QLineEdit
-            self.fileLineEdit.setText(file_name)
+        if file_names:
+            #Establece las rutas de los archivos seleccionados en el QLineEdit
+            self.fileLineEdit.setText('; '.join(file_names))  #Une las rutas con un separador
+
+    #Aceptar procesamiento
+    def on_accept(self):
+        filtro_seleccionado = self.comboBox.currentText()
+        input_dir = b"Images/Original"
+        
+        if filtro_seleccionado == "Desenfoque":
+            print("Procesando desenfoque")
+            image_processing.process_images_blur_color(input_dir, b"Images/Result/Blur")
+        elif filtro_seleccionado == "Gris":
+            print("Procesando gris")
+            image_processing.process_images_gray(input_dir, b"Images/Result/Gray")
+        elif filtro_seleccionado == "Horizontal a BYN":
+            print("Procesando horizontal a BYN")
+            image_processing.process_images_mirror_horizontal_gray(input_dir, b"Images/Result/HorizontalGray")
+        elif filtro_seleccionado == "Horizontal a Color":
+            print("Procesando horizontal a Color")
+            image_processing.process_images_mirror_horizontal_color(input_dir, b"Images/Result/HorizontalColor")
+        elif filtro_seleccionado == "Vertical a BYN":
+            print("Procesando vertical a BYN")
+            image_processing.process_images_mirror_vertical_gray(input_dir, b"Images/Result/VerticalGray")
+        elif filtro_seleccionado == "Vertical a Color":
+            print("Procesando vertical a Color")
+            image_processing.process_images_mirror_vertical_color(input_dir, b"Images/Result/VerticalColor")
+        else:
+            print("Filtro no reconocido")
 
 #Ejecución principal
 if __name__ == "__main__":
