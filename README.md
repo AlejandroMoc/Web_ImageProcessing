@@ -24,7 +24,7 @@ aplicada a una imagen, ejecutar el siguiente comando:
 
 Para ejecutar la interfaz:
 
-    python interface_design.py
+    python image_processing_interface.py
 
 Para ejecutar el archivo escrito en C de forma independiente
 es necesario colocar las imágenes en la carpeta
