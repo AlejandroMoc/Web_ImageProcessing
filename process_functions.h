@@ -9,9 +9,9 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
     printf("\nEn escala de grises\n");
     
     FILE *image, *outputImage, *report;
-    char output_path[100] = "./";
-    strcat(output_path, name_output);
-    strcat(output_path, ".bmp");
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s", name_output);
+    snprintf(output_path, sizeof(output_path), "%s.bmp", name_output);
 
     image = fopen(input_path, "rb");
     if (!image) {
@@ -73,13 +73,13 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
     return 0;
 }
 
-//Voltear horizontalmente a
+//Voltear horizontalmente
 extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal en escala de grises\n");
     FILE *image, *outputImage, *report;
-    char output_path[100] = "./";
-    strcat(output_path, name_output);
-    strcat(output_path, ".bmp");
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s", name_output);
+    snprintf(output_path, sizeof(output_path), "%s.bmp", name_output);
 
     image = fopen(input_path, "rb");
     outputImage = fopen(output_path, "wb");
@@ -138,18 +138,24 @@ extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     return 0;
 }
 
-extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
+extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal a color\n");
+
     FILE *image, *outputImage, *report;
-    char output_path[100] = "./";
-    strcat(output_path, name_output);
-    strcat(output_path, ".bmp");
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s", name_output);
+    snprintf(output_path, sizeof(output_path), "%s.bmp", name_output);
 
     image = fopen(input_path, "rb");
-    outputImage = fopen(output_path, "wb");
+    if (!image) {
+        fprintf(stderr, "Error al abrir imagen de entrada: %s\n", input_path);
+        return 1;
+    }
 
-    if (!image || !outputImage) {
-        printf("Error abriendo archivos.\n");
+    outputImage = fopen(output_path, "wb");
+    if (!outputImage) {
+        fprintf(stderr, "Error al crear imagen de salida: %s\n", output_path);
+        fclose(image);
         return 1;
     }
 
@@ -163,20 +169,21 @@ extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
     unsigned char* row = (unsigned char*)malloc(row_padded);
     unsigned char* mirrored_row = (unsigned char*)malloc(row_padded);
 
-    // Contadores de localidades (por byte)
-    int localidades_leidas = 54;    
-    int localidades_escritas = 54; 
+    int localidades_leidas = 54;
+    int localidades_escritas = 54;
 
     for (int i = 0; i < height; i++) {
         fread(row, sizeof(unsigned char), row_padded, image);
         localidades_leidas += row_padded;
+
         for (int j = 0; j < width; j++) {
             int src_idx = j * 3;
             int dst_idx = (width - 1 - j) * 3;
-            mirrored_row[dst_idx]     = row[src_idx];
+            mirrored_row[dst_idx] = row[src_idx];
             mirrored_row[dst_idx + 1] = row[src_idx + 1];
             mirrored_row[dst_idx + 2] = row[src_idx + 2];
         }
+
         fwrite(mirrored_row, sizeof(unsigned char), row_padded, outputImage);
         localidades_escritas += row_padded;
     }
@@ -186,7 +193,6 @@ extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
     fclose(image);
     fclose(outputImage);
 
-    // Escribir en el reporte
     report = fopen("report.txt", "a");
     if (report != NULL) {
         fprintf(report, "Imagen mirror_horizontal_color: %s\n", input_path);
@@ -196,16 +202,18 @@ extern int  mirror_horizontal_color(char input_path[40], char name_output[40]) {
     } else {
         perror("No se pudo abrir el archivo de reporte");
     }
+
     return 0;
 }
+
 
 //Voltear verticalmente
 extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical en escala de grises\n");
     FILE *image, *outputImage, *report;
-    char output_path[100] = "./";
-    strcat(output_path, name_output);
-    strcat(output_path, ".bmp");
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s", name_output);
+    snprintf(output_path, sizeof(output_path), "%s.bmp", name_output);
 
     image = fopen(input_path,"rb");
     outputImage = fopen(output_path,"wb");
@@ -269,9 +277,9 @@ extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
 extern int mirror_vertical_color(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical a color\n");
     FILE *image, *outputImage, *report;
-    char output_path[100] = "./";
-    strcat(output_path, name_output);
-    strcat(output_path, ".bmp");
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s", name_output);
+    snprintf(output_path, sizeof(output_path), "%s.bmp", name_output);
 
     image = fopen(input_path, "rb");
     outputImage = fopen(output_path, "wb");
@@ -322,7 +330,7 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
     return 0;
 }
 
-//Blur
+//Desenfoque
 extern int blur_image_color(char input_path[80], char name_output[80], int kernel_size) {
     if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
         printf("Kernel inválido. Debe ser impar y entre 55 y 155.\n");
@@ -332,9 +340,9 @@ extern int blur_image_color(char input_path[80], char name_output[80], int kerne
     printf("\nAplicando blur con kernel %dx%d\n", kernel_size, kernel_size);
 
     FILE *image, *outputImage, *report;
-    char output_path[100] = "./";
-    strcat(output_path, name_output);
-    strcat(output_path, ".bmp");
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s", name_output);
+    snprintf(output_path, sizeof(output_path), "%s.bmp", name_output);
 
     image = fopen(input_path, "rb");
     outputImage = fopen(output_path, "wb");
@@ -500,7 +508,7 @@ extern int process_images_gray(const char *input_dir, const char *output_dir_gra
         }
 
         //Constrir ruta de salida, pasar por función
-        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_gray.bmp", output_dir_gray, base_filename);
+        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_gray", output_dir_gray, base_filename);
         printf("Procesando escala de grises: %s -> %s\n", input_path, output_path_gray);
 
         if (gray_scale(input_path, output_path_gray) != 0) {
@@ -555,7 +563,7 @@ extern int process_images_mirror_horizontal_gray(const char *input_dir, const ch
         }
 
         //Constrir ruta de salida, pasar por función
-        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_gray.bmp", output_dir_gray, base_filename);
+        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_gray", output_dir_gray, base_filename);
         printf("Procesando volteado horizontal a byn: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_horizontal_gray(input_path, output_path_gray) != 0) {
@@ -610,7 +618,7 @@ extern int process_images_mirror_horizontal_color(const char *input_dir, const c
         }
 
         //Constrir ruta de salida, pasar por función
-        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_color.bmp", output_dir_gray, base_filename);
+        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_color", output_dir_gray, base_filename);
         printf("Procesando volteado horizontal a color: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_horizontal_color(input_path, output_path_gray) != 0) {
@@ -665,7 +673,7 @@ extern int process_images_mirror_vertical_gray(const char *input_dir, const char
         }
 
         //Constrir ruta de salida, pasar por función
-        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_gray.bmp", output_dir_gray, base_filename);
+        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_gray", output_dir_gray, base_filename);
         printf("Procesando volteado verticalmente a byn: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_vertical_gray(input_path, output_path_gray) != 0) {
@@ -720,7 +728,7 @@ extern int process_images_mirror_vertical_color(const char *input_dir, const cha
         }
 
         //Constrir ruta de salida, pasar por función
-        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_color.bmp", output_dir_gray, base_filename);
+        snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_color", output_dir_gray, base_filename);
         printf("Procesando volteado verticalmente a color: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_vertical_color(input_path, output_path_gray) != 0) {
@@ -777,7 +785,7 @@ extern int process_images_blur_color(const char *input_dir, const char *output_d
             strcpy(base_filename, ent->d_name);
         }
 
-        snprintf(output_path_blur, sizeof(output_path_blur), "%s/%s_blur_%dx%d.bmp", output_dir_blur, base_filename, kernel_size, kernel_size);
+        snprintf(output_path_blur, sizeof(output_path_blur), "%s/%s_blur_%dx%d", output_dir_blur, base_filename, kernel_size, kernel_size);
 
         printf("Procesando desenfoque: %s -> %s\n", input_path, output_path_blur);
 

@@ -22,9 +22,13 @@ aplicada a una imagen, ejecutar el siguiente comando:
 
 ### Multiprocesamiento de imágenes
 
-El archivo principal puede encontrarse en image_processing.c.
-Para ejecutarlo es necesario colocar las imágenes en la carpeta
-"Images/Original" y ejecutar los siguientes comandos:
+Para ejecutar la interfaz:
+
+    python interface_design.py
+
+Para ejecutar el archivo escrito en C de forma independiente
+es necesario colocar las imágenes en la carpeta
+"Images/Original" y ejecutar:
 
     gcc -fopenmp image_processing.c
     ./a.out

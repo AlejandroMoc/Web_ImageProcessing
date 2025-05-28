@@ -1,12 +1,6 @@
 *.out
-Images/Original/*.bmp
-Images/Result/Blur/*.bmp
-Images/Result/Gray/*.bmp
-Images/Result/HorizontalColor/*.bmp
-Images/Result/HorizontalGray/*.bmp
-Images/Result/VerticalColor/*.bmp
-Images/Result/VerticalGray/*.bmp
-report.txt
+*.bmp
 *.exe
 
+report.txt
 .vscode/

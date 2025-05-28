@@ -1,3 +1,4 @@
+
 #include <omp.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -7,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "process_functions.h"
+
 #define NUM_THREADS 36
 
 #ifdef _WIN32
@@ -17,51 +19,73 @@
 
 //gcc -fopenmp image_processing.c
 //./a.out
+//gcc -shared -o image_processing.so -fPIC image_processing.c -fopenmp
 
-//Ejecución principal
-int main() {
-    //Directorios, crearlos si no existen
-    const char *input_dir = "Images/Original";
-    const char *output_dir_gray = "Images/Result/Gray";
-    const char *output_dir_horizontalgray = "Images/Result/HorizontalGray";
-    const char *output_dir_horizontalcolor = "Images/Result/HorizontalColor";
-    const char *output_dir_verticalgray = "Images/Result/VerticalGray";
-    const char *output_dir_verticalcolor = "Images/Result/VerticalColor";
-    const char *output_dir_blur = "Images/Result/Blur";
+void create_directories(const char *path) {
+    char temp_path[256];
+    char *p = NULL;
+    size_t len;
 
-    MKDIR(output_dir_gray);
-    MKDIR(output_dir_horizontalgray);
-    MKDIR(output_dir_horizontalcolor);
-    MKDIR(output_dir_verticalgray);
-    MKDIR(output_dir_verticalcolor);
-    MKDIR(output_dir_blur);
+    snprintf(temp_path, sizeof(temp_path), "%s", path);
+    len = strlen(temp_path);
+    if (temp_path[len - 1] == '/') {
+        temp_path[len - 1] = '\0';
+    }
+    for (p = temp_path + 1; *p; p++) {
+        if (*p == '/') {
+            *p = '\0';
+            MKDIR(temp_path);
+            *p = '/';
+        }
+    }
+    MKDIR(temp_path);
+}
 
-    //Abrir archivo de reporte
-    FILE *report_file;
-    char data[80] = "report.txt";
-    report_file = fopen(data, "w");
-    if (report_file == NULL){
+void create_directory(const char *dir) {
+    struct stat st = {0};
+    if (stat(dir, &st) == -1) {
+        if (mkdir(dir, 0700) == 0) {
+            printf("Directorio creado: %s\n", dir);
+        } else {
+            perror("Error al crear directorio");
+        }
+    } else {
+        printf("El directorio ya existe: %s\n", dir);
+    }
+}
+
+int processing_all(const char *input_dir, int blur_ratio) {
+    char output_dir_gray[256];
+    char output_dir_horizontalgray[256];
+    char output_dir_horizontalcolor[256];
+    char output_dir_verticalgray[256];
+    char output_dir_verticalcolor[256];
+    char output_dir_blur[256];
+
+    snprintf(output_dir_gray, sizeof(output_dir_gray), "%s/Result/Gray", input_dir);
+    create_directories(output_dir_gray);
+    snprintf(output_dir_horizontalgray, sizeof(output_dir_horizontalgray), "%s/Result/HorizontalGray", input_dir);
+    create_directories(output_dir_horizontalgray);
+    snprintf(output_dir_horizontalcolor, sizeof(output_dir_horizontalcolor), "%s/Result/HorizontalColor", input_dir);
+    create_directories(output_dir_horizontalcolor);
+    snprintf(output_dir_verticalgray, sizeof(output_dir_verticalgray), "%s/Result/VerticalGray", input_dir);
+    create_directories(output_dir_verticalgray);
+    snprintf(output_dir_verticalcolor, sizeof(output_dir_verticalcolor), "%s/Result/VerticalColor", input_dir);
+    create_directories(output_dir_verticalcolor);
+    snprintf(output_dir_blur, sizeof(output_dir_blur), "%s/Result/Blur", input_dir);
+    create_directories(output_dir_blur);
+
+    FILE *report_file = fopen("report.txt", "w");
+    if (report_file == NULL) {
         printf("Archivo nulo\n");
         exit(1);
     }
 
-    //Solicitar valor de desenfoque
-    int blur_ratio;
-    do {
-      printf("Introduce un no. impar entre 55 y 155: ");
-      scanf("%d", &blur_ratio);
-
-      if (blur_ratio < 55 || blur_ratio > 155 || blur_ratio % 2 == 0) {
-        printf("Entrada inválida. Por favor introduce un valor impar entre 55 y 155.\n");
-      }
-    } while (blur_ratio < 55 || blur_ratio > 155 || blur_ratio % 2 == 0);
     printf("Elegiste %d como valor del desenfoque.\n", blur_ratio);
 
-    //Empezar conteo de tiempo
     omp_set_num_threads(NUM_THREADS);
     const double start_time = omp_get_wtime();
 
-    //Paralelización
     #pragma omp parallel
     {
         #pragma omp sections
@@ -82,62 +106,30 @@ int main() {
             { process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor); }
 
             #pragma omp section
-            { process_images_blur_color(input_dir, output_dir_blur , blur_ratio); }
+            { process_images_blur_color(input_dir, output_dir_blur, blur_ratio); }
         }
     }
 
-    //Generar un archivo de texto de salida (.txt)
-    fprintf(report_file, "Reporte de resultados\n");
-    fprintf(report_file, "Localidades leídas\n");
-    fprintf(report_file, "Localidades totales\n");
-
-    //Calcular tiempo de ejecución
     const double end_time = omp_get_wtime();
     double tiempo_total = end_time - start_time;
     printf("El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
     fprintf(report_file, "El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
     fclose(report_file);
 
-    // Leer datos desde el archivo generado
-    report_file = fopen("report.txt", "r");
-    if (!report_file) {
-        perror("Error al reabrir el archivo de reporte para cálculo de MIPS");
+}
+
+int main(int argc, char *argv[]) {
+    const char *input_dir = "Images/Original";
+    if (argc < 2) {
+        fprintf(stderr, "Uso: %s <blur_ratio>\n", argv[0]);
         return 1;
     }
-
-    long long total_localidades = 0;
-    char linea[256];
-    while (fgets(linea, sizeof(linea), report_file)) {
-        if (strstr(linea, "Localidades leídas") || strstr(linea, "Localidades escritas")) {
-            long long valor;
-            if (sscanf(linea, "%*[^:]: %lld", &valor) == 1) {
-                total_localidades += valor;
-                if (total_localidades < 0) {
-                    fprintf(stderr, "Ha ocurrido un overflow en el total de localidades.\n");
-                    //fclose(report_file);
-                    return -1;
-                }
-            }
-        }
+    int blur_ratio = atoi(argv[1]);
+    if (blur_ratio < 55 || blur_ratio > 155 || blur_ratio % 2 == 0) {
+        fprintf(stderr, "Valor de blur_ratio inválido. Debe ser impar y entre 55 y 155.\n");
+        return 1;
     }
-    fclose(report_file);
-
-    long long instrucciones = total_localidades * 20LL;
-    long double mips = instrucciones / (tiempo_total * 1e6);
-
-    printf("Total de localidades accedidas: %lld\n", total_localidades);
-    printf("Instrucciones aproximadas ejecutadas: %lld\n", instrucciones);
-    printf("MIPS aproximados: %.2Lf\n", mips);
-
-    report_file = fopen("report.txt", "a");
-    if (report_file != NULL) {
-        fprintf(report_file, "Total de localidades accedidas: %lld\n", total_localidades);
-        fprintf(report_file, "Instrucciones ejecutadas (20 por localidad): %lld\n", instrucciones);
-        fprintf(report_file, "MIPS estimados: %.2Lf\n", mips);
-        fclose(report_file);
-    } else {
-        perror("Error opening file for appending");
-    }
-
+    processing_all(input_dir, blur_ratio);
     return 0;
+
 }
