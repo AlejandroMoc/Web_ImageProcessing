@@ -8,8 +8,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "process_functions.h"
-#include "export.h"
-
 
 #define NUM_THREADS 36
 
@@ -56,7 +54,7 @@ void create_directory(const char *dir) {
     }
 }
 
-EXPORT int processing_all(const char *input_dir, int blur_ratio) {
+int processing_all(const char *input_dir, int blur_ratio) {
     char output_dir_gray[256];
     char output_dir_horizontalgray[256];
     char output_dir_horizontalcolor[256];
