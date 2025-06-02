@@ -11,7 +11,6 @@ image_processing.processing_all.argtypes = [ctypes.c_char_p, ctypes.c_int]
 image_processing.processing_all.restype = None
 
 class Ui_Dialog(object):
-    #Generar la IU
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(390, 300)
@@ -20,18 +19,17 @@ class Ui_Dialog(object):
         Dialog.setMinimumSize(QtCore.QSize(390, 300))
         Dialog.setMaximumSize(QtCore.QSize(390, 300))
 
-        #Botones de aceptación y cancelación
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(20, 230, 350, 30))
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel | QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        
+
         self.label_image = QtWidgets.QLabel(parent=Dialog)
         self.label_image.setGeometry(QtCore.QRect(20, 30, 350, 20))
 
         self.fileLineEdit = QtWidgets.QLineEdit(parent=Dialog)
         self.fileLineEdit.setGeometry(QtCore.QRect(20, 60, 300, 30))
-        
+
         self.browseButton = QtWidgets.QPushButton("...", parent=Dialog)
         self.browseButton.setGeometry(QtCore.QRect(330, 60, 40, 30))
         self.browseButton.clicked.connect(self.open_file_dialog)
@@ -53,13 +51,10 @@ class Ui_Dialog(object):
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(self.on_accept)
         self.buttonBox.rejected.connect(Dialog.reject)
-
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-        #Conectar la señal de cambio de índice
         self.comboBox.currentIndexChanged.connect(self.updateKernelVisibility)
 
-    #Traducciones
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         lang, _ = locale.getlocale()
@@ -70,17 +65,11 @@ class Ui_Dialog(object):
             self.label_filter.setText(_translate("Dialog", "Selecciona el tipo de filtro"))
             self.label_kernel.setText(_translate("Dialog", "Selecciona el valor del núcleo"))
             self.browseButton.setText(_translate("Dialog", "..."))
-
             self.comboBox.clear()
             self.comboBox.addItems([
-                _translate("Dialog", "Todo"),
-                _translate("Dialog", "Original"),
-                _translate("Dialog", "Desenfoque"),
-                _translate("Dialog", "Gris"),
-                _translate("Dialog", "Horizontal a BYN"),
-                _translate("Dialog", "Horizontal a Color"),
-                _translate("Dialog", "Vertical a BYN"),
-                _translate("Dialog", "Vertical a Color"),
+                "Todo", "Original", "Desenfoque", "Gris",
+                "Horizontal a BYN", "Horizontal a Color",
+                "Vertical a BYN", "Vertical a Color"
             ])
         else:
             Dialog.setWindowTitle(_translate("Dialog", "Image Processing"))
@@ -88,63 +77,66 @@ class Ui_Dialog(object):
             self.label_filter.setText(_translate("Dialog", "Select the filter type"))
             self.label_kernel.setText(_translate("Dialog", "Select the kernel value"))
             self.browseButton.setText(_translate("Dialog", "..."))
-
             self.comboBox.clear()
             self.comboBox.addItems([
-                _translate("Dialog", "All"),
-                _translate("Dialog", "Original"),
-                _translate("Dialog", "Blurred"),
-                _translate("Dialog", "Gray"),
-                _translate("Dialog", "Horizontal Gray"),
-                _translate("Dialog", "Horizontal Color"),
-                _translate("Dialog", "Vertical Gray"),
-                _translate("Dialog", "Vertical Color"),
+                "All", "Original", "Blurred", "Gray",
+                "Horizontal Gray", "Horizontal Color",
+                "Vertical Gray", "Vertical Color"
             ])
-
         self.updateKernelVisibility()
 
-    #Actualizar visibilidad de label_kernel y spinBox
     def updateKernelVisibility(self):
-        if self.comboBox.currentText() == "Desenfoque" or self.comboBox.currentText() == "Blurred"\
-        or self.comboBox.currentText() == "Todo" or self.comboBox.currentText() == "All":
+        if self.comboBox.currentText() in ["Todo", "All", "Desenfoque", "Blurred"]:
             self.label_kernel.show()
             self.spinBox.show()
         else:
             self.label_kernel.hide()
             self.spinBox.hide()
 
-    #Abrir diálogo de selección de carpeta
     def open_file_dialog(self):
         dir_name = QtWidgets.QFileDialog.getExistingDirectory(None, "Selecciona la carpeta", "")
         if dir_name:
             self.fileLineEdit.setText(dir_name)
 
-    #Aceptar procesamiento
     def on_accept(self):
         filtro_seleccionado = self.comboBox.currentText()
         input_dir = self.fileLineEdit.text()
-        
-        if filtro_seleccionado == "Todo":
+        print(f"Filtro seleccionado: '{filtro_seleccionado}'")
+
+        # Mapa de traducciones
+        mapa_filtros = {
+            "Todo": "all", "All": "all",
+            "Desenfoque": "blur", "Blurred": "blur",
+            "Gris": "gray", "Gray": "gray",
+            "Horizontal a BYN": "hgray", "Horizontal Gray": "hgray",
+            "Horizontal a Color": "hcolor", "Horizontal Color": "hcolor",
+            "Vertical a BYN": "vgray", "Vertical Gray": "vgray",
+            "Vertical a Color": "vcolor", "Vertical Color": "vcolor"
+        }
+
+        filtro = mapa_filtros.get(filtro_seleccionado, None)
+
+        if filtro == "all":
             print("Procesando todos los filtros")
             blur_ratio = self.spinBox.value()
             image_processing.processing_all(input_dir.encode('utf-8'), blur_ratio)
-        elif filtro_seleccionado == "Desenfoque":
+        elif filtro == "blur":
             print("Procesando desenfoque")
             blur_ratio = self.spinBox.value()
             image_processing.process_images_blur_color(input_dir.encode('utf-8'), os.path.join(input_dir, "Blur").encode('utf-8'))
-        elif filtro_seleccionado == "Gris":
+        elif filtro == "gray":
             print("Procesando gris")
             image_processing.process_images_gray(input_dir.encode('utf-8'), os.path.join(input_dir, "Gray").encode('utf-8'))
-        elif filtro_seleccionado == "Horizontal a BYN":
+        elif filtro == "hgray":
             print("Procesando horizontal a BYN")
             image_processing.process_images_mirror_horizontal_gray(input_dir.encode('utf-8'), os.path.join(input_dir, "HorizontalGray").encode('utf-8'))
-        elif filtro_seleccionado == "Horizontal a Color":
+        elif filtro == "hcolor":
             print("Procesando horizontal a Color")
             image_processing.process_images_mirror_horizontal_color(input_dir.encode('utf-8'), os.path.join(input_dir, "HorizontalColor").encode('utf-8'))
-        elif filtro_seleccionado == "Vertical a BYN":
+        elif filtro == "vgray":
             print("Procesando vertical a BYN")
             image_processing.process_images_mirror_vertical_gray(input_dir.encode('utf-8'), os.path.join(input_dir, "VerticalGray").encode('utf-8'))
-        elif filtro_seleccionado == "Vertical a Color":
+        elif filtro == "vcolor":
             print("Procesando vertical a Color")
             image_processing.process_images_mirror_vertical_color(input_dir.encode('utf-8'), os.path.join(input_dir, "VerticalColor").encode('utf-8'))
         else:

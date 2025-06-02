@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "export.h"
 
 ///FUNCIONES INDIVIDUALES
 
 //Escala gris
-extern int gray_scale(char input_path[40], char name_output[40]) {
+EXPORT extern int gray_scale(char input_path[40], char name_output[40]) {
     printf("\nEn escala de grises\n");
     
     FILE *image, *outputImage, *report;
@@ -74,7 +75,7 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
 }
 
 //Voltear horizontalmente
-extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
+EXPORT extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal en escala de grises\n");
     FILE *image, *outputImage, *report;
     char output_path[256];
@@ -138,7 +139,7 @@ extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     return 0;
 }
 
-extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
+EXPORT extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
     printf("\nEn espejo respecto a la horizontal a color\n");
 
     FILE *image, *outputImage, *report;
@@ -208,7 +209,7 @@ extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
 
 
 //Voltear verticalmente
-extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
+EXPORT extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical en escala de grises\n");
     FILE *image, *outputImage, *report;
     char output_path[256];
@@ -274,7 +275,7 @@ extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
     return 0;
 }
 
-extern int mirror_vertical_color(char input_path[80], char name_output[80]){
+EXPORT extern int mirror_vertical_color(char input_path[80], char name_output[80]){
     printf("\nEn espejo respecto a la vertical a color\n");
     FILE *image, *outputImage, *report;
     char output_path[256];
@@ -331,7 +332,7 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
 }
 
 //Desenfoque
-extern int blur_image_color(char input_path[80], char name_output[80], int kernel_size) {
+EXPORT extern int blur_image_color(char input_path[80], char name_output[80], int kernel_size) {
     if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
         printf("Kernel inválido. Debe ser impar y entre 55 y 155.\n");
         return 1;
@@ -465,7 +466,7 @@ extern int blur_image_color(char input_path[80], char name_output[80], int kerne
 
 //FUNCIONES POR LOTES
 //Funciones para múltiples imágenes
-extern int process_images_gray(const char *input_dir, const char *output_dir_gray) {
+EXPORT extern int process_images_gray(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
     char input_path[256];
@@ -520,7 +521,7 @@ extern int process_images_gray(const char *input_dir, const char *output_dir_gra
     return 0;
 }
 
-extern int process_images_mirror_horizontal_gray(const char *input_dir, const char *output_dir_gray) {
+EXPORT extern int process_images_mirror_horizontal_gray(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
     char input_path[256];
@@ -575,7 +576,7 @@ extern int process_images_mirror_horizontal_gray(const char *input_dir, const ch
     return 0;
 }
 
-extern int process_images_mirror_horizontal_color(const char *input_dir, const char *output_dir_gray) {
+EXPORT extern int process_images_mirror_horizontal_color(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
     char input_path[256];
@@ -630,7 +631,7 @@ extern int process_images_mirror_horizontal_color(const char *input_dir, const c
     return 0;
 }
 
-extern int process_images_mirror_vertical_gray(const char *input_dir, const char *output_dir_gray) {
+EXPORT extern int process_images_mirror_vertical_gray(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
     char input_path[256];
@@ -685,7 +686,7 @@ extern int process_images_mirror_vertical_gray(const char *input_dir, const char
     return 0;
 }
 
-extern int process_images_mirror_vertical_color(const char *input_dir, const char *output_dir_gray) {
+EXPORT extern int process_images_mirror_vertical_color(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
     char input_path[256];
@@ -740,7 +741,7 @@ extern int process_images_mirror_vertical_color(const char *input_dir, const cha
     return 0;
 }
 
-extern int process_images_blur_color(const char *input_dir, const char *output_dir_blur, int kernel_size) {
+EXPORT extern int process_images_blur_color(const char *input_dir, const char *output_dir_blur, int kernel_size) {
     if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
         printf("Kernel inválido. Debe ser impar y entre 5 y 15.\n");
         return 1;
