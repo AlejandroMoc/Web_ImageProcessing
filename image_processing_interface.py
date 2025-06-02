@@ -124,27 +124,27 @@ class Ui_Dialog(object):
         filtro_seleccionado = self.comboBox.currentText()
         input_dir = self.fileLineEdit.text()
         
-        if filtro_seleccionado == "Todo":
+        if filtro_seleccionado == "Todo" or filtro_seleccionado == "All":
             print("Procesando todos los filtros")
             blur_ratio = self.spinBox.value()
             image_processing.processing_all(input_dir.encode('utf-8'), blur_ratio)
-        elif filtro_seleccionado == "Desenfoque":
+        elif filtro_seleccionado == "Desenfoque" or filtro_seleccionado == "Blurred":
             print("Procesando desenfoque")
             blur_ratio = self.spinBox.value()
             image_processing.process_images_blur_color(input_dir.encode('utf-8'), os.path.join(input_dir, "Blur").encode('utf-8'))
-        elif filtro_seleccionado == "Gris":
+        elif filtro_seleccionado == "Gris" or filtro_seleccionado == "Gray":
             print("Procesando gris")
             image_processing.process_images_gray(input_dir.encode('utf-8'), os.path.join(input_dir, "Gray").encode('utf-8'))
-        elif filtro_seleccionado == "Horizontal a BYN":
+        elif filtro_seleccionado == "Horizontal a BYN" or filtro_seleccionado == "Horizontal Gray":
             print("Procesando horizontal a BYN")
             image_processing.process_images_mirror_horizontal_gray(input_dir.encode('utf-8'), os.path.join(input_dir, "HorizontalGray").encode('utf-8'))
-        elif filtro_seleccionado == "Horizontal a Color":
+        elif filtro_seleccionado == "Horizontal a Color" or filtro_seleccionado == "Horizontal Color":
             print("Procesando horizontal a Color")
             image_processing.process_images_mirror_horizontal_color(input_dir.encode('utf-8'), os.path.join(input_dir, "HorizontalColor").encode('utf-8'))
-        elif filtro_seleccionado == "Vertical a BYN":
+        elif filtro_seleccionado == "Vertical a BYN" or filtro_seleccionado == "Vertical Gray":
             print("Procesando vertical a BYN")
             image_processing.process_images_mirror_vertical_gray(input_dir.encode('utf-8'), os.path.join(input_dir, "VerticalGray").encode('utf-8'))
-        elif filtro_seleccionado == "Vertical a Color":
+        elif filtro_seleccionado == "Vertical a Color" or filtro_seleccionado == "Vertical Color":
             print("Procesando vertical a Color")
             image_processing.process_images_mirror_vertical_color(input_dir.encode('utf-8'), os.path.join(input_dir, "VerticalColor").encode('utf-8'))
         else:
