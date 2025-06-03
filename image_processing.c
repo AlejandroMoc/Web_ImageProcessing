@@ -1,4 +1,3 @@
-
 #include <omp.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -7,9 +6,12 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <mpi.h>
+#include <stdatomic.h>
 #include "process_functions.h"
 
-#define NUM_THREADS 36
+#define NUM_THREADS 4
+#define MAX_IMAGES 1000
 
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
@@ -17,119 +19,147 @@
     #define MKDIR(path) mkdir(path, 0777)
 #endif
 
-//gcc -fopenmp image_processing.c
-//./a.out
-//gcc -shared -o image_processing.so -fPIC image_processing.c -fopenmp
+void get_image_list(const char* dir_path, char image_list[MAX_IMAGES][256], int* total) {
+    DIR* dir;
+    struct dirent* entry;
+    *total = 0;
 
-void create_directories(const char *path) {
-    char temp_path[256];
-    char *p = NULL;
-    size_t len;
-
-    snprintf(temp_path, sizeof(temp_path), "%s", path);
-    len = strlen(temp_path);
-    if (temp_path[len - 1] == '/') {
-        temp_path[len - 1] = '\0';
-    }
-    for (p = temp_path + 1; *p; p++) {
-        if (*p == '/') {
-            *p = '\0';
-            MKDIR(temp_path);
-            *p = '/';
-        }
-    }
-    MKDIR(temp_path);
-}
-
-void create_directory(const char *dir) {
-    struct stat st = {0};
-    if (stat(dir, &st) == -1) {
-        if (mkdir(dir, 0700) == 0) {
-            printf("Directorio creado: %s\n", dir);
-        } else {
-            perror("Error al crear directorio");
-        }
-    } else {
-        printf("El directorio ya existe: %s\n", dir);
-    }
-}
-
-int processing_all(const char *input_dir, int blur_ratio) {
-    char output_dir_gray[256];
-    char output_dir_horizontalgray[256];
-    char output_dir_horizontalcolor[256];
-    char output_dir_verticalgray[256];
-    char output_dir_verticalcolor[256];
-    char output_dir_blur[256];
-
-    snprintf(output_dir_gray, sizeof(output_dir_gray), "%s/Result/Gray", input_dir);
-    create_directories(output_dir_gray);
-    snprintf(output_dir_horizontalgray, sizeof(output_dir_horizontalgray), "%s/Result/HorizontalGray", input_dir);
-    create_directories(output_dir_horizontalgray);
-    snprintf(output_dir_horizontalcolor, sizeof(output_dir_horizontalcolor), "%s/Result/HorizontalColor", input_dir);
-    create_directories(output_dir_horizontalcolor);
-    snprintf(output_dir_verticalgray, sizeof(output_dir_verticalgray), "%s/Result/VerticalGray", input_dir);
-    create_directories(output_dir_verticalgray);
-    snprintf(output_dir_verticalcolor, sizeof(output_dir_verticalcolor), "%s/Result/VerticalColor", input_dir);
-    create_directories(output_dir_verticalcolor);
-    snprintf(output_dir_blur, sizeof(output_dir_blur), "%s/Result/Blur", input_dir);
-    create_directories(output_dir_blur);
-
-    FILE *report_file = fopen("report.txt", "w");
-    if (report_file == NULL) {
-        printf("Archivo nulo\n");
+    dir = opendir(dir_path);
+    if (dir == NULL) {
+        perror("Error al abrir el directorio de entrada");
         exit(1);
     }
 
-    printf("Elegiste %d como valor del desenfoque.\n", blur_ratio);
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG && strstr(entry->d_name, ".bmp")) {
+            snprintf(image_list[*total], 256, "%s/%s", dir_path, entry->d_name);
+            (*total)++;
+            if (*total >= MAX_IMAGES) break;
+        }
+    }
+    closedir(dir);
+}
+
+int main(int argc, char** argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Uso: %s <blur_ratio> <input_dir>\n", argv[0]);
+        return 1;
+    }
+
+    int blur_ratio = atoi(argv[1]);
+    const char* input_dir = argv[2];
+
+    int rank, size;
+    char hostname[256];
+    char image_list[MAX_IMAGES][256];
+    int total_images;
+
+    const char *output_dir_gray = "Images/Result/Gray";
+    const char *output_dir_horizontalgray = "Images/Result/HorizontalGray";
+    const char *output_dir_horizontalcolor = "Images/Result/HorizontalColor";
+    const char *output_dir_verticalgray = "Images/Result/VerticalGray";
+    const char *output_dir_verticalcolor = "Images/Result/VerticalColor";
+    const char *output_dir_blur = "Images/Result/Blur";
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    gethostname(hostname, sizeof(hostname));
+
+    if (rank == 0) {
+        MKDIR(output_dir_gray);
+        MKDIR(output_dir_horizontalgray);
+        MKDIR(output_dir_horizontalcolor);
+        MKDIR(output_dir_verticalgray);
+        MKDIR(output_dir_verticalcolor);
+        MKDIR(output_dir_blur);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    MPI_Bcast(&blur_ratio, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     omp_set_num_threads(NUM_THREADS);
-    const double start_time = omp_get_wtime();
+    double start_time = MPI_Wtime();
 
-    #pragma omp parallel
-    {
-        #pragma omp sections
-        {
-            #pragma omp section
-            { process_images_gray(input_dir, output_dir_gray); }
+    if (rank == 0) {
+        get_image_list(input_dir, image_list, &total_images);
+    }
 
-            #pragma omp section
-            { process_images_mirror_horizontal_gray(input_dir, output_dir_horizontalgray); }
+    MPI_Bcast(&total_images, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(image_list, MAX_IMAGES * 256, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-            #pragma omp section
-            { process_images_mirror_horizontal_color(input_dir, output_dir_horizontalcolor); }
+    int images_per_proc = total_images / size;
+    int remainder = total_images % size;
+    int start = rank * images_per_proc + (rank < remainder ? rank : remainder);
+    int count = images_per_proc + (rank < remainder ? 1 : 0);
 
-            #pragma omp section
-            { process_images_mirror_vertical_gray(input_dir, output_dir_verticalgray); }
+    printf("[RANK %d] Host %s procesando %d imágenes desde índice %d\n", rank, hostname, count, start);
 
-            #pragma omp section
-            { process_images_mirror_vertical_color(input_dir, output_dir_verticalcolor); }
+    atomic_int processed_images;
+    atomic_init(&processed_images, 0);
 
-            #pragma omp section
-            { process_images_blur_color(input_dir, output_dir_blur, blur_ratio); }
+    #pragma omp parallel for schedule(static)
+    for (int i = start; i < start + count; i++) {
+        char* path = image_list[i];
+        char* filename = strrchr(path, '/');
+        if (!filename) continue;
+        filename++;
+
+        char outname[256];
+
+        snprintf(outname, 256, "%s/%s", output_dir_gray, filename);
+        gray_scale(path, outname);
+
+        snprintf(outname, 256, "%s/%s", output_dir_horizontalgray, filename);
+        mirror_horizontal_gray(path, outname);
+
+        snprintf(outname, 256, "%s/%s", output_dir_horizontalcolor, filename);
+        mirror_horizontal_color(path, outname);
+
+        snprintf(outname, 256, "%s/%s", output_dir_verticalgray, filename);
+        mirror_vertical_gray(path, outname);
+
+        snprintf(outname, 256, "%s/%s", output_dir_verticalcolor, filename);
+        mirror_vertical_color(path, outname);
+
+        snprintf(outname, 256, "%s/%s", output_dir_blur, filename);
+        blur_image_color(path, outname, blur_ratio);
+
+        atomic_fetch_add(&processed_images, 1);
+    }
+
+    // Solo el proceso 0 imprime el progreso periódicamente
+    if (rank == 0) {
+        int last_reported = 0;
+        while (last_reported < total_images) {
+            int current = atomic_load(&processed_images);
+            int porcentaje = (current * 100) / total_images;
+            if (porcentaje > last_reported) {
+                printf("PROGRESS %d\n", porcentaje);
+                fflush(stdout);
+                last_reported = porcentaje;
+            }
+            usleep(500000); // espera 0.5 segundos
         }
     }
 
-    const double end_time = omp_get_wtime();
-    double tiempo_total = end_time - start_time;
-    printf("El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
-    fprintf(report_file, "El valor del tiempo que tomó fue %lf segundos\n", tiempo_total);
-    fclose(report_file);
+    double end_time = MPI_Wtime();
+    double elapsed = end_time - start_time;
+    double max_elapsed;
 
-}
+    MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-int main(int argc, char *argv[]) {
-    const char *input_dir = "Images/Original";
-    if (argc < 2) {
-        fprintf(stderr, "Uso: %s <blur_ratio>\n", argv[0]);
-        return 1;
+    char report_name[64];
+    sprintf(report_name, "report_proc%d.txt", rank);
+    FILE *report = fopen(report_name, "w");
+    fprintf(report, "Proceso %d en host %s completó en %.3lf segundos\n", rank, hostname, elapsed);
+    fclose(report);
+
+    if (rank == 0) {
+        printf("\nTiempo total distribuido: %.3lf segundos\n", max_elapsed);
     }
-    int blur_ratio = atoi(argv[1]);
-    if (blur_ratio < 55 || blur_ratio > 155 || blur_ratio % 2 == 0) {
-        fprintf(stderr, "Valor de blur_ratio inválido. Debe ser impar y entre 55 y 155.\n");
-        return 1;
-    }
-    processing_all(input_dir, blur_ratio);
+
+    MPI_Finalize();
     return 0;
-
 }
