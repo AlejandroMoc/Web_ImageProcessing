@@ -1,4 +1,5 @@
-# Evaluación Intermedia
+# Evaluación Final
+
 Implementación de redes de área amplia y servicios distribuidos
 
 - A01424875 - Marlon Yahir Martínez Chacón
@@ -24,7 +25,7 @@ aplicada a una imagen, ejecutar el siguiente comando:
 
 Para ejecutar la interfaz:
 
-    python image_processing_interface.py
+    python interface.py
 
 Para ejecutar el archivo escrito en C de forma independiente
 es necesario colocar las imágenes en la carpeta

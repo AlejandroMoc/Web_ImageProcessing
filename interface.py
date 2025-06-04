@@ -4,14 +4,15 @@ import locale
 import subprocess
 from PyQt6 import QtCore, QtWidgets
 from PyQt6 import QtGui
+import shutil
 
 class Worker(QtCore.QThread):
     output = QtCore.pyqtSignal(str)
     finished = QtCore.pyqtSignal(str)
     error = QtCore.pyqtSignal(str)
 
-    def _init_(self, command, output_dir):
-        super()._init_()
+    def __init__(self, command, output_dir):
+        super().__init__()
         self.command = command
         self.output_dir = output_dir
 
@@ -33,14 +34,25 @@ class Worker(QtCore.QThread):
         except Exception as e:
             self.error.emit(str(e))
 
+def limpiar_carpeta(path):
+    if os.path.exists(path) and os.path.isdir(path):
+        for nombre in os.listdir(path):
+            ruta = os.path.join(path, nombre)
+            try:
+                if os.path.isfile(ruta) or os.path.islink(ruta):
+                    os.unlink(ruta)
+                elif os.path.isdir(ruta):
+                    shutil.rmtree(ruta)
+            except Exception as e:
+                print(f"Error borrando {ruta}: {e}")
+
 def count_processed_images(folders):
     count = 0
     for folder in folders:
         try:
             count += len([f for f in os.listdir(folder) if f.lower().endswith('.bmp')])
-            print(count)
         except FileNotFoundError:
-            pass  # carpeta aún no creada
+            pass
     return count
 
 class Ui_Dialog(object):
@@ -52,7 +64,6 @@ class Ui_Dialog(object):
         Dialog.setMinimumSize(QtCore.QSize(390, 340))
         Dialog.setMaximumSize(QtCore.QSize(390, 340))
 
-        # Barra de menú
         self.menubar = QtWidgets.QMenuBar(Dialog)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 390, 21))
         self.menuEquipo = QtWidgets.QMenu("Equipo", self.menubar)
@@ -156,26 +167,57 @@ class Ui_Dialog(object):
             self.blurSlider.hide()
             self.blurValueLabel.hide()
 
+    def obtener_total_slots(self, machinefile_path="machinefile"):
+        total_slots = 0
+        try:
+            with open(machinefile_path, "r") as f:
+                for line in f:
+                    if "slots=" in line:
+                        partes = line.strip().split("slots=")
+                        if len(partes) == 2:
+                            try:
+                                total_slots += int(partes[1])
+                            except ValueError:
+                                continue
+        except FileNotFoundError:
+            QtWidgets.QMessageBox.warning(None, "Advertencia", "No se encontró el archivo machinefile.")
+        return total_slots if total_slots > 0 else 1  # mínimo 1 proceso
+
     def open_file_dialog(self):
         dir_name = QtWidgets.QFileDialog.getExistingDirectory(None, "Selecciona la carpeta", "")
         if dir_name:
             self.fileLineEdit.setText(dir_name)
 
     def start_processing(self):
+                # Obtener base_dir correcto (padre de la carpeta seleccionada)
+        base_dir = os.path.dirname(self.fileLineEdit.text())
+
+        # Definir carpetas de resultado para limpiar
+        folders_to_clean = [
+            os.path.join(base_dir, "Result", "Gray"),
+            os.path.join(base_dir, "Result", "HorizontalGray"),
+            os.path.join(base_dir, "Result", "HorizontalColor"),
+            os.path.join(base_dir, "Result", "VerticalGray"),
+            os.path.join(base_dir, "Result", "VerticalColor"),
+            os.path.join(base_dir, "Result", "Blur"),
+        ]
+
+        # Limpiar las carpetas antes de procesar
+        for folder in folders_to_clean:
+            limpiar_carpeta(folder)
         input_dir = self.fileLineEdit.text()
         blur_ratio = str(self.blurSlider.value())
         output_dir = os.path.join(input_dir, "Result")
-
-        # Suponiendo que sabes cuántos filtros produces (6 en este ejemplo)
         num_filters = 6
-
-        # Aquí deberías calcular total_images, por ejemplo leyendo carpeta input_dir
-        # Para demo, ponemos 1000, cambia esto por conteo real
-        total_images = 10  
+        countOriginal = 0
+        countOriginal += len([f for f in os.listdir(input_dir) if f.lower().endswith('.bmp')])
+        print(countOriginal)
+        total_images = countOriginal  # Cambia esto a conteo real si es necesario
         self.total_expected = total_images * num_filters
-
+        total_slots = self.obtener_total_slots()
+        print(total_slots)
         command = [
-            "mpirun", "-np", "3", "--hostfile", "machinefile", "./run.sh", blur_ratio, input_dir
+            "mpirun", "-np", str(total_slots), "--hostfile", "machinefile", "./run.sh", blur_ratio, input_dir
         ]
 
         self.outputTextEdit.clear()
@@ -187,15 +229,12 @@ class Ui_Dialog(object):
         self.worker.error.connect(self.on_error)
         self.worker.start()
 
-        # Timer para actualizar barra de progreso
         self.progressTimer = QtCore.QTimer()
         self.progressTimer.timeout.connect(self.update_progress_from_files)
-        self.progressTimer.start(500)  # cada 0.5 segundos
+        self.progressTimer.start(500)
 
     def update_progress_from_files(self):
-        
         base_dir = os.path.dirname(self.fileLineEdit.text())
-        print(base_dir)
         folders = [
             os.path.join(base_dir, "Result", "Gray"),
             os.path.join(base_dir, "Result", "HorizontalGray"),
@@ -206,9 +245,7 @@ class Ui_Dialog(object):
         ]
         processed = count_processed_images(folders)
         porcentaje = int((processed / self.total_expected) * 100)
-        if porcentaje > 100:
-            porcentaje = 100
-        self.progressBar.setValue(porcentaje)
+        self.progressBar.setValue(min(porcentaje, 100))
 
     def append_output(self, text):
         self.outputTextEdit.append(text)
@@ -219,6 +256,15 @@ class Ui_Dialog(object):
             self.progressTimer.stop()
         self.progressBar.setValue(100)
         self.outputTextEdit.append(f"\nArchivos guardados en:\n{output_dir}")
+        self.mostrar_reporte_global()
+
+    def mostrar_reporte_global(self):
+        ruta_reporte = os.path.join(self.fileLineEdit.text(), "report_global.txt")
+        if os.path.exists(ruta_reporte):
+            self.outputTextEdit.append("\n--- REPORTE DE RENDIMIENTO ---")
+            with open(ruta_reporte, "r") as f:
+                for line in f:
+                    self.outputTextEdit.append(line.strip())
 
     def on_error(self, message):
         if hasattr(self, 'progressTimer'):
@@ -234,7 +280,7 @@ class Ui_Dialog(object):
             "Christian Flores - A01734997\nSarai Santiago - A01735331\nMarlon Yahir - A01424875\nAlejandro Moctezuma - A01736353"
         )
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()
