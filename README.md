@@ -9,7 +9,7 @@ Implementación de redes de área amplia y servicios distribuidos
 
 ## Wiki
 
-Si deseas acceder a la Wiki puedes hacer clic [aquí](https://github.com/AlejandroMoc/ImplementaciónRedes/wiki).
+Si deseas acceder a la Wiki puedes hacer clic [aquí](https://github.com/AlejandroMoc/ImplementacionRedes/wiki).
 
 ## Archivos a revisar
 
