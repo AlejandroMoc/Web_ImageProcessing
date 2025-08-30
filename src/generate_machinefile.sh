@@ -1,29 +1,29 @@
 #!/bin/bash
 
-# Ruta al archivo machinefile
+# Path to the machinefile
 MACHINEFILE="machinefile"
 
-# Limpiar archivo anterior
+# Clear previous file
 > "$MACHINEFILE"
 
-# Definir hosts y slots
+# Define hosts and slots
 declare -A hosts_slots
 hosts_slots["ub0"]=6
 hosts_slots["ub1"]=1
 hosts_slots["ub2"]=1
 
-# Intentar hacer ping a cada host
+# Try to ping each host
 for host in "${!hosts_slots[@]}"; do
-    echo -n "Comprobando $host... "
+    echo -n "Checking $host... "
     
-    # -c 1 = 1 solo paquete, -W 1 = timeout de 1 segundo
+    # -c 1 = 1 packet only, -W 1 = 1 second timeout
     if ping -c 1 -W 1 "$host" &>/dev/null; then
-        echo "activo"
+        echo "Active"
         echo "$host slots=${hosts_slots[$host]}" >> "$MACHINEFILE"
     else
-        echo "NO disponible"
+        echo "NOT available"
     fi
 done
 
-echo -e "\nContenido generado en $MACHINEFILE:"
+echo -e "\nGenerated content in $MACHINEFILE:"
 cat "$MACHINEFILE"

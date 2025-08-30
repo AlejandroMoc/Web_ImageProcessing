@@ -1,39 +1,34 @@
-# Evaluación Final
+# Batch Image Processing
 
-Implementación de redes de área amplia y servicios distribuidos
-
-- A01424875 - Marlon Yahir Martínez Chacón
-- A01734997 - Christian Flores Alberto
-- A01735331 - Sarai Santiago Lozano
-- A01736353 - Alejandro Daniel Moctezuma Cruz
+Wide area networks and distributed services by processing images in batches and applying filters to them.
 
 ## Wiki
 
-Si deseas acceder a la Wiki puedes hacer clic [aquí](https://github.com/AlejandroMoc/ImplementacionRedes/wiki).
+You can find more, including the project installation, its requirements, methodology and the solutions it proposes, see the [Wiki](https://github.com/AlejandroMoc/Web_ImageProcessing/wiki).
 
-## Archivos a revisar
+<!-- ## Running
 
-### Interfaz de usuario
+To open the user interface and select the modification applied to an image, execute the following command:
 
-Para abrir la interfaz de usuario y seleccionar la modificación
-aplicada a una imagen, ejecutar el siguiente comando:
-
-    cd UI/
-    python interface_design.py
-
-### Multiprocesamiento de imágenes
-
-Para ejecutar la interfaz:
-
+    cd src/
     python interface.py
 
-Para ejecutar el archivo escrito en C de forma independiente
-es necesario colocar las imágenes en la carpeta
-"Images/Original" y ejecutar:
+To run the file written in C independently, it is necessary
+to place the images in the "pictures/original" folder and execute:
 
     gcc -fopenmp image_processing.c
-    ./a.out
+    ./a.out -->
 
-<!-- ## Licencia
+## Developers
+
+[Marlon Yahir Martínez Chacón](https://github.com/MarlonY123)
+
+[Christian Flores Alberto](https://github.com/christian1444)
+
+[Sarai Santiago Lozano](https://github.com/SaraiSLoz)
+
+[Alejandro Daniel Moctezuma Cruz](https://github.com/AlejandroMoc)
+
+<!-- ## License
 
 Este proyecto cuenta con la licensia GPLv3, la cual estipula que no se puede vender ni demandar por la auditoría del programa. -->

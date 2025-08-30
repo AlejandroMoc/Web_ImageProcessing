@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-///FUNCIONES INDIVIDUALES
+///INDIVIDUAL FUNCTIONS
 
-//Escala gris
+//Gray scale
 extern int gray_scale(char input_path[40], char name_output[40]) {
-    printf("\nEn escala de grises\n");
+    printf("\nIn grayscale\n");
     
     FILE *image, *outputImage, *report;
     char output_path[256];
@@ -15,19 +15,19 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
 
     image = fopen(input_path, "rb");
     if (!image) {
-        perror("Error al abrir imagen de entrada");
+        perror("Error opening input image");
         return 1;
     }
 
     outputImage = fopen(output_path, "wb");
     if (!outputImage) {
-        perror("Error al crear imagen de salida");
+        perror("Error creating output image");
         fclose(image);
         return 1;
     }
 
     if (!image || !outputImage) {
-        printf("Error abriendo archivos.\n");
+        printf("Error opening files.\n");
         return 1;
     }
 
@@ -67,15 +67,15 @@ extern int gray_scale(char input_path[40], char name_output[40]) {
         fprintf(report, "Localidades escritas: %d\n\n", pixels_processed);
         fclose(report);
     } else {
-        perror("No se pudo abrir el archivo de reporte");
+        perror("Could not open report file");
     }
 
     return 0;
 }
 
-//Voltear horizontalmente
+//Flip horizontally
 extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
-    printf("\nEn espejo respecto a la horizontal en escala de grises\n");
+    printf("\nHorizontally mirrored in grayscale\n");
     FILE *image, *outputImage, *report;
     char output_path[256];
     snprintf(output_path, sizeof(output_path), "%s", name_output);
@@ -85,7 +85,7 @@ extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
     outputImage = fopen(output_path, "wb");
 
     if (!image || !outputImage) {
-        printf("Error abriendo archivos.\n");
+        printf("Error opening files.\n");
         return 1;
     }
 
@@ -139,7 +139,7 @@ extern int mirror_horizontal_gray(char input_path[40], char name_output[40]) {
 }
 
 extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
-    printf("\nEn espejo respecto a la horizontal a color\n");
+    printf("\nHorizontally mirrored in color\n");
 
     FILE *image, *outputImage, *report;
     char output_path[256];
@@ -148,13 +148,13 @@ extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
 
     image = fopen(input_path, "rb");
     if (!image) {
-        fprintf(stderr, "Error al abrir imagen de entrada: %s\n", input_path);
+        fprintf(stderr, "Error opening input image: %s\n", input_path);
         return 1;
     }
 
     outputImage = fopen(output_path, "wb");
     if (!outputImage) {
-        fprintf(stderr, "Error al crear imagen de salida: %s\n", output_path);
+        fprintf(stderr, "Error creating output image: %s\n", output_path);
         fclose(image);
         return 1;
     }
@@ -207,9 +207,9 @@ extern int mirror_horizontal_color(char input_path[40], char name_output[40]) {
 }
 
 
-//Voltear verticalmente
+//Flip vertically
 extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
-    printf("\nEn espejo respecto a la vertical en escala de grises\n");
+    printf("\nVertically mirrored in grayscale\n");
     FILE *image, *outputImage, *report;
     char output_path[256];
     snprintf(output_path, sizeof(output_path), "%s", name_output);
@@ -219,7 +219,7 @@ extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
     outputImage = fopen(output_path,"wb");
 
     if (!image || !outputImage) {
-        printf("Error abriendo archivos.");
+        printf("Error opening files.");
         return 0;
     }
 
@@ -275,7 +275,7 @@ extern int mirror_vertical_gray(char input_path[80], char name_output[80]){
 }
 
 extern int mirror_vertical_color(char input_path[80], char name_output[80]){
-    printf("\nEn espejo respecto a la vertical a color\n");
+    printf("\nVertically mirrored in color\n");
     FILE *image, *outputImage, *report;
     char output_path[256];
     snprintf(output_path, sizeof(output_path), "%s", name_output);
@@ -285,7 +285,7 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
     outputImage = fopen(output_path, "wb");
 
     if (!image || !outputImage) {
-        printf("Error abriendo archivos.\n");
+        printf("Error opening files.\n");
         return 1;
     }
 
@@ -330,10 +330,10 @@ extern int mirror_vertical_color(char input_path[80], char name_output[80]){
     return 0;
 }
 
-//Desenfoque
+//Blur
 extern int blur_image_color(char input_path[80], char name_output[80], int kernel_size) {
     if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
-        printf("Kernel inválido. Debe ser impar y entre 55 y 155.\n");
+        printf("Invalid kernel. It must be odd and between 55 and 155.\n");
         return 1;
     }
 
@@ -463,8 +463,8 @@ extern int blur_image_color(char input_path[80], char name_output[80], int kerne
 
 
 
-//FUNCIONES POR LOTES
-//Funciones para múltiples imágenes
+//BATCH FUNCTIONS
+//Functions for multiple images
 extern int process_images_gray(const char *input_dir, const char *output_dir_gray) {
     DIR *dir;
     struct dirent *ent;
@@ -485,19 +485,19 @@ extern int process_images_gray(const char *input_dir, const char *output_dir_gra
         }
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        //Verificar si es un archivo regular
+        //Verify if it's a regular file
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
+            fprintf(stderr, "Error getting file status for %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Omitiendo archivo no regular: %s\n", input_path);
+            printf("Skipping non-regular file: %s\n", input_path);
             continue;
         }
 
-        //Extraer nombre de archivo sin extensión
+        //Extract filename without extension
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -507,12 +507,12 @@ extern int process_images_gray(const char *input_dir, const char *output_dir_gra
             strcpy(base_filename, ent->d_name);
         }
 
-        //Constrir ruta de salida, pasar por función
+        //Build output path, pass through function
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_gray", output_dir_gray, base_filename);
-        printf("Procesando escala de grises: %s -> %s\n", input_path, output_path_gray);
+        printf("Processing grayscale: %s -> %s\n", input_path, output_path_gray);
 
         if (gray_scale(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error al procesar escala de grises para %s\n", input_path);
+            fprintf(stderr, "Error processing grayscale for %s\n", input_path);
         }
     }
 
@@ -562,12 +562,12 @@ extern int process_images_mirror_horizontal_gray(const char *input_dir, const ch
             strcpy(base_filename, ent->d_name);
         }
 
-        //Constrir ruta de salida, pasar por función
+        //Build output path, pass through function
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_gray", output_dir_gray, base_filename);
-        printf("Procesando volteado horizontal a byn: %s -> %s\n", input_path, output_path_gray);
+        printf("Processing horizontal flip to grayscale: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_horizontal_gray(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error al procesar volteado horizontal a byn para %s\n", input_path);
+            fprintf(stderr, "Error processing horizontal flip to grayscale for %s\n", input_path);
         }
     }
 
@@ -585,7 +585,7 @@ extern int process_images_mirror_horizontal_color(const char *input_dir, const c
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error al abrir el directorio");
+        perror("Error opening the directory");
         return 1;
     }
 
@@ -598,16 +598,16 @@ extern int process_images_mirror_horizontal_color(const char *input_dir, const c
         //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
+            fprintf(stderr, "Error getting file status for %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Omitiendo archivo no regular: %s\n", input_path);
+            printf("Skipping non-regular file: %s\n", input_path);
             continue;
         }
 
-        //Extraer nombre de archivo sin extensión
+        //Extract filename without extension
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -617,12 +617,12 @@ extern int process_images_mirror_horizontal_color(const char *input_dir, const c
             strcpy(base_filename, ent->d_name);
         }
 
-        //Constrir ruta de salida, pasar por función
+        //Build output path, pass through function
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_horizontal_color", output_dir_gray, base_filename);
-        printf("Procesando volteado horizontal a color: %s -> %s\n", input_path, output_path_gray);
+        printf("Processing horizontal flip in color: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_horizontal_color(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error al procesar volteado horizontal a color para %s\n", input_path);
+            fprintf(stderr, "Error processing horizontal flip in color for %s\n", input_path);
         }
     }
 
@@ -640,7 +640,7 @@ extern int process_images_mirror_vertical_gray(const char *input_dir, const char
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error al abrir el directorio");
+        perror("Error opening the directory");
         return 1;
     }
 
@@ -650,19 +650,19 @@ extern int process_images_mirror_vertical_gray(const char *input_dir, const char
         }
         snprintf(input_path, sizeof(input_path), "%s/%s", input_dir, ent->d_name);
 
-        //Verificar si es un archivo regular
+        //Verify if it's a regular file
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
+            fprintf(stderr, "Error getting file status for %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Omitiendo archivo no regular: %s\n", input_path);
+            printf("Skipping non-regular file: %s\n", input_path);
             continue;
         }
 
-        //Extraer nombre de archivo sin extensión
+        //Extract filename without extension
         dot = strrchr(ent->d_name, '.');
         if (dot != NULL) {
             size_t base_len = dot - ent->d_name;
@@ -672,12 +672,12 @@ extern int process_images_mirror_vertical_gray(const char *input_dir, const char
             strcpy(base_filename, ent->d_name);
         }
 
-        //Constrir ruta de salida, pasar por función
+        //Build output path, pass through function
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_gray", output_dir_gray, base_filename);
-        printf("Procesando volteado verticalmente a byn: %s -> %s\n", input_path, output_path_gray);
+        printf("Processing vertical flip to grayscale: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_vertical_gray(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error al procesar volteado verticalmente a byn para %s\n", input_path);
+            fprintf(stderr, "Error processing vertical flip to grayscale for %s\n", input_path);
         }
     }
 
@@ -695,7 +695,7 @@ extern int process_images_mirror_vertical_color(const char *input_dir, const cha
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error al abrir el directorio");
+        perror("Error opening directory");
         return 1;
     }
 
@@ -708,12 +708,12 @@ extern int process_images_mirror_vertical_color(const char *input_dir, const cha
         //Verificar si es un archivo regular
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error al obtener estatus de archivo para %s\n", input_path);
+            fprintf(stderr, "Error getting file status for %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Omitiendo archivo no regular: %s\n", input_path);
+            printf("Skipping non-regular file: %s\n", input_path);
             continue;
         }
 
@@ -729,10 +729,10 @@ extern int process_images_mirror_vertical_color(const char *input_dir, const cha
 
         //Constrir ruta de salida, pasar por función
         snprintf(output_path_gray, sizeof(output_path_gray), "%s/%s_vertical_color", output_dir_gray, base_filename);
-        printf("Procesando volteado verticalmente a color: %s -> %s\n", input_path, output_path_gray);
+        printf("Processing vertical flip in color: %s -> %s\n", input_path, output_path_gray);
 
         if (mirror_vertical_color(input_path, output_path_gray) != 0) {
-            fprintf(stderr, "Error al procesar volteado verticalmente a color para %s\n", input_path);
+            fprintf(stderr, "Error processing vertical flip in color for %s\n", input_path);
         }
     }
 
@@ -742,7 +742,7 @@ extern int process_images_mirror_vertical_color(const char *input_dir, const cha
 
 extern int process_images_blur_color(const char *input_dir, const char *output_dir_blur, int kernel_size) {
     if (kernel_size < 55 || kernel_size > 155 || kernel_size % 2 == 0) {
-        printf("Kernel inválido. Debe ser impar y entre 5 y 15.\n");
+        printf("Invalid kernel. It must be odd and between 55 and 155.\n");
         return 1;
     }
 
@@ -755,7 +755,8 @@ extern int process_images_blur_color(const char *input_dir, const char *output_d
 
     dir = opendir(input_dir);
     if (dir == NULL) {
-        perror("Error al abrir el directorio");
+        perror("Error opening directory");
+
         return 1;
     }
 
@@ -767,12 +768,12 @@ extern int process_images_blur_color(const char *input_dir, const char *output_d
 
         struct stat path_stat;
         if (stat(input_path, &path_stat) != 0) {
-            fprintf(stderr, "Error obteniendo información de %s\n", input_path);
+            fprintf(stderr, "Error getting file information for %s\n", input_path);
             continue;
         }
 
         if (!S_ISREG(path_stat.st_mode)) {
-            printf("Omitiendo archivo no regular: %s\n", input_path);
+            printf("Skipping non-regular file: %s\n", input_path);
             continue;
         }
 
@@ -787,10 +788,10 @@ extern int process_images_blur_color(const char *input_dir, const char *output_d
 
         snprintf(output_path_blur, sizeof(output_path_blur), "%s/%s_blur_%dx%d", output_dir_blur, base_filename, kernel_size, kernel_size);
 
-        printf("Procesando desenfoque: %s -> %s\n", input_path, output_path_blur);
+        printf("Processing blur: %s -> %s\n", input_path, output_path_blur);
 
         if (blur_image_color(input_path, output_path_blur, kernel_size) != 0) {
-            fprintf(stderr, "Error aplicando desenfoque a %s\n", input_path);
+            fprintf(stderr, "Error applying blur to %s\n", input_path);
         }
     }
 

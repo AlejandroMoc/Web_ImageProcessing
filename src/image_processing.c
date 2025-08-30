@@ -11,7 +11,7 @@
 #include "process_functions.h"
 
 #define MAX_IMAGES 1000
-#define INSTR_PER_LOC 20  // 20 instrucciones por localidad
+#define INSTR_PER_LOC 20  // 20 instructions per location
 
 #ifdef _WIN32
     #define MKDIR(path) mkdir(path)
@@ -26,7 +26,7 @@ void get_image_list(const char* dir_path, char image_list[MAX_IMAGES][256], int*
 
     dir = opendir(dir_path);
     if (dir == NULL) {
-        perror("Error al abrir el directorio de entrada");
+        perror("Error opening the input directory");
         exit(1);
     }
 
@@ -42,7 +42,7 @@ void get_image_list(const char* dir_path, char image_list[MAX_IMAGES][256], int*
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        fprintf(stderr, "Uso: %s <blur_ratio> <input_dir>\n", argv[0]);
+        fprintf(stderr, "Use: %s <blur_ratio> <input_dir>\n", argv[0]);
         return 1;
     }
 
@@ -55,19 +55,19 @@ int main(int argc, char** argv) {
     int total_images;
 
     const char *output_dirs[] = {
-        "Images/Result/Gray",
-        "Images/Result/HorizontalGray",
-        "Images/Result/HorizontalColor",
-        "Images/Result/VerticalGray",
-        "Images/Result/VerticalColor",
-        "Images/Result/Blur"
+        "pictures/result/Gray",
+        "pictures/result/HorizontalGray",
+        "pictures/result/HorizontalColor",
+        "pictures/result/VerticalGray",
+        "pictures/result/VerticalColor",
+        "pictures/result/Blur"
     };
 
     FILE *report_file1;
     char data[80] = "report.txt";
     report_file1 = fopen(data, "w");
     if(report_file1 == NULL){
-        printf("Archivo nulo");
+        printf("Null archive");
         exit(1);
     }
     fclose(report_file1);
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Bcast(&blur_ratio, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    printf("[RANK %d] OpenMP usando %d hilos en %s\n", rank, omp_get_max_threads(), hostname);
+    printf("[RANK %d] OpenMP using %d threads on %s\n", rank, omp_get_max_threads(), hostname);
     double start_time = MPI_Wtime();
 
     if (rank == 0) {
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     int start = rank * images_per_proc + (rank < remainder ? rank : remainder);
     int count = images_per_proc + (rank < remainder ? 1 : 0);
 
-    printf("[RANK %d] Host %s procesando %d imágenes desde índice %d\n", rank, hostname, count, start);
+    printf("[RANK %d] Host %s processing %d images from index %d\n", rank, hostname, count, start);
 
     atomic_int processed_images;
     atomic_init(&processed_images, 0);
@@ -154,28 +154,28 @@ int main(int argc, char** argv) {
     char report_name[64];
     sprintf(report_name, "report_proc%d.txt", rank);
     FILE *report = fopen(report_name, "w");
-    fprintf(report, "Proceso %d en host %s completó en %.3lf segundos\n", rank, hostname, elapsed);
-    fprintf(report, "Localidades leídas: %d\n", local_reads);
-    fprintf(report, "Localidades escritas: %d\n", local_writes);
+    fprintf(report, "Process %d on host %s completed in %.3lf seconds\n", rank, hostname, elapsed);
+    fprintf(report, "Locations read: %d\n", local_reads);
+    fprintf(report, "Locations written: %d\n", local_writes);
     fclose(report);
 
     FILE *report_file;
     if (rank == 0) {
         report_file = fopen("report.txt", "r");
         if (!report_file) {
-            perror("Error al reabrir el archivo de reporte para cálculo de MIPS");
+            perror("Error reopening the report file for MIPS calculation");
             return 1;
         }
 
         long long total_localidades = 0;
         char linea[256];
         while (fgets(linea, sizeof(linea), report_file)) {
-            if (strstr(linea, "Localidades leídas") || strstr(linea, "Localidades escritas")) {
+            if (strstr(linea, "Locations read") || strstr(linea, "Locations written")) {
                 long long valor;
                 if (sscanf(linea, "%*[^:]: %lld", &valor) == 1) {
                     total_localidades += valor;
                     if (total_localidades < 0) {
-                        fprintf(stderr, "Ha ocurrido un overflow en el total de localidades.\n");
+                        fprintf(stderr, "An overflow has occurred in the total locations.\n");
                         return -1;
                     }
                 }
@@ -184,24 +184,24 @@ int main(int argc, char** argv) {
 
         fclose(report_file);
 
-        long long instrucciones = total_localidades * 20LL;
-        double mips = instrucciones / (max_elapsed * 1e6);
+        long long instruccions = total_localidades * 20LL;
+        double mips = instruccions / (max_elapsed * 1e6);
         double pixeles_por_seg = (double)(total_images * 6) / max_elapsed;
 
-        printf("\n--- REPORTE FINAL ---\n");
-        printf("Tiempo total distribuido: %.3lf segundos\n", max_elapsed);
-        printf("Total de localidades leídas: %d\n", total_localidades/2);
-        printf("Total de localidades escritas: %d\n", total_localidades/2);
-        printf("Pixeles por segundo: %.2f\n", pixeles_por_seg);
-        printf("MIPS estimados (20 instrucciones por localidad): %.10f\n", mips);
+        printf("\n--- FINAL REPORT ---\n");
+        printf("Total distributed time: %.3lf seconds\n", max_elapsed);
+        printf("Total locations read: %d\n", total_localidades/2);
+        printf("Total locations written: %d\n", total_localidades/2);
+        printf("Pixels per second: %.2f\n", pixeles_por_seg);
+        printf("Estimated MIPS (20 instructions per location): %.10f\n", mips);
 
         FILE *final_report = fopen("report_global.txt", "w");
-        fprintf(final_report, "Tiempo total distribuido: %.3lf segundos\n", max_elapsed);
-        fprintf(final_report, "Total de localidades leídas: %d\n", total_localidades/2);
-        fprintf(final_report, "Total de localidades escritas: %d\n", total_localidades/2);
-        fprintf(final_report, "Pixeles por segundo: %.2f\n", pixeles_por_seg);
-        fprintf(final_report, "Instrucciones totales estimadas: %lld\n", instrucciones);
-        fprintf(final_report, "MIPS estimados: %.2f\n", mips);
+        fprintf(final_report, "Total distributed time: %.3lf seconds\n", max_elapsed);
+        fprintf(final_report, "Total locations read: %d\n", total_localidades/2);
+        fprintf(final_report, "Total locations written: %d\n", total_localidades/2);
+        fprintf(final_report, "Pixels per second: %.2f\n", pixeles_por_seg);
+        fprintf(final_report, "Total estimated instructions: %lld\n", instruccions);
+        fprintf(final_report, "Estimated MIPS: %.2f\n", mips);
         fclose(final_report);
     }
 
